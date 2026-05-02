@@ -1,0 +1,100 @@
+# <PROJECT_NAME> — GitHub Copilot Router
+
+> **Identity.** <ONE_SENTENCE_PROJECT_DESCRIPTION>. Stack: <TECH_STACK_ONE_LINE>.
+>
+> **This file is the router, not the manual.** It points to the right docs / agents / instructions per task. Detailed context lives elsewhere — read only what you need.
+
+---
+
+## Golden rules (always)
+
+1. **Never push to `<PROTECTED_BRANCH>` without the project owner's explicit approval.**
+2. Always start on `<DEFAULT_DEV_BRANCH>`. Run `<BUILD_COMMAND>` before commit.
+3. Don't refactor outside the task. Preserve existing behavior unless asked.
+4. For data changes: trace UI → API → DB → tests before touching.
+5. <PROJECT_SPECIFIC_GOLDEN_RULE>
+6. Don't read every doc. Use the routing map below.
+7. **Before editing any file, the relevant `.github/instructions/*.instructions.md` will auto-load if the file path matches its `applyTo:` glob. Verify the rule loaded; if not, read it manually.**
+8. **Multi-agent handoffs use a structured schema** — see `docs/ai-context/HANDOFF_SCHEMA.md`. The `@<PROJECT_SLUG>-orchestrator` agent emits outbound `handoff:` YAML; specialists return `return:` YAML. **No evidence, no claim.**
+
+## Mandatory workflow (every non-trivial task)
+
+1. Restate the task.
+2. Identify affected roles (<LIST_OF_ROLES>).
+3. Read `docs/ai-context/INDEX.md`.
+4. Read only the minimum docs flagged for this task (50–150 lines each).
+5. Verify that path-matching `.github/instructions/*.instructions.md` auto-loaded.
+6. For medium/complex tasks, invoke `@<PROJECT_SLUG>-orchestrator` in Copilot Chat. For narrow domain work, invoke the relevant `@<specialist>` directly.
+6.5. **Handoff format.** Orchestrator → specialist delegations MUST use the outbound `handoff:` YAML block from `docs/ai-context/HANDOFF_SCHEMA.md`. Specialists MUST validate it (refuse if missing/vague) and return the inbound `return:` block.
+7. Inspect code before proposing changes.
+8. Smallest safe change.
+9. Run relevant checks (<TEST_COMMAND>, build, etc.).
+10. **Definition of done:** report changed files, tests, risks, follow-ups, AND the list of `.github/instructions/*.instructions.md` files that applied to your edits.
+
+---
+
+## Context routing — pick by task area
+
+| Task touches… | Read this orientation map first |
+|---|---|
+| <ROLE_1> dashboard / progress / history | `docs/ai-context/<role-1>-experience.md` |
+| <ROLE_2> dashboard / settings | `docs/ai-context/<role-2>-experience.md` |
+| <FEATURE_AREA_1> | `docs/ai-context/<feature-1>.md` |
+| <FEATURE_AREA_2> | `docs/ai-context/<feature-2>.md` |
+| Database / schema / migrations | `docs/ai-context/database-schema-guide.md` |
+| Auth / sessions / data exposure | `docs/ai-context/security-privacy.md` |
+| Compliance / regulatory | `docs/ai-context/legal-compliance.md` |
+| Tests / E2E | `docs/ai-context/testing-strategy.md` |
+| Build / deploy / cron | `docs/ai-context/release-deployment.md` |
+| Cross-role behavior / acceptance criteria | `docs/ai-context/roles-and-permissions.md` |
+| Repo orientation / what is the product? | `docs/ai-context/product-overview.md` |
+
+## Agent routing — pick by task class
+
+| Task class | Use |
+|---|---|
+| Anything medium/complex | `@<PROJECT_SLUG>-orchestrator` (it picks the rest) |
+| <DOMAIN_1> | `@<specialist-1>` |
+| <DOMAIN_2> | `@<specialist-2>` |
+| <DOMAIN_3> | `@<specialist-3>` |
+| Functional QA in browser | `@qa-functional` |
+| Auth / privacy / data exposure | `@security-privacy` |
+| Compliance review (REVIEW-ONLY) | `@legal-compliance` |
+| Build / deploy / cron / env | `@release-devops` |
+| Docs / instructions / agents cleanup | `@context-librarian` |
+
+## Prompt files (slash commands)
+
+- `/investigate-bug` — bug investigation flow
+- `/build-feature` — feature build flow
+- `/qa-flow` — QA pass
+- `/compliance-review` — compliance review (flagger only, never approver)
+- `/context-refactor` — keep `.github/` and `docs/` tidy
+
+## Reference docs (canonical — don't duplicate; link to them)
+
+- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md`
+- Architecture: `docs/ARCHITECTURE.md`
+- API reference: `docs/API.md`
+- Tech stack: `docs/TECH_STACK.md`
+- Recent commits: `docs/CHANGELOG.md`
+- <ANY_OTHER_CANONICAL_DOCS>
+
+## Branches & deploy (universal)
+
+| Branch | Environment | URL |
+|---|---|---|
+| `<PRODUCTION_BRANCH>` | production | <PRODUCTION_URL> |
+| `<STAGING_BRANCH>` | staging | <STAGING_URL> |
+
+<DEPLOY_MECHANISM_DESCRIPTION>
+
+## Local dev
+
+```bash
+<DEV_COMMANDS>
+```
+
+## How to use this Copilot setup
+
+For human-readable usage with copy-paste prompt templates, read **`docs/ai-context/ORCHESTRATION_SPOONFEEDER.md`**.

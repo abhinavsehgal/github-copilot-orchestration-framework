@@ -1,0 +1,61 @@
+---
+applyTo: "<GLOB_PATTERN_1>,<GLOB_PATTERN_2>"
+excludeAgent: "code-review"
+---
+
+# <Domain Display Name> Instructions
+
+> **What this is.** Auto-loaded by GitHub Copilot when editing any file matching the `applyTo:` glob in the frontmatter above. These are the hard-won invariants for this domain.
+>
+> **`excludeAgent: "code-review"`** is OPTIONAL. Use it if these instructions shouldn't apply during Copilot code review (e.g. if they're implementation guidance not relevant to reviewing diffs). Remove the line if you DO want code review to use these instructions. Note: code review reads only the first 4,000 characters of each instruction file.
+
+## Hard rules
+
+### <Rule title — short imperative sentence>
+
+**Why:** <ONE_SENTENCE_REASON — past production incident or hard invariant>
+
+**How to apply:** <2-4 SENTENCES — what to do, what helper to use, what to check. Cite the helper's path if relevant.>
+
+### <Next rule title>
+
+**Why:** <reason>
+
+**How to apply:** <how>
+
+<ADD_AS_MANY_RULES_AS_NEEDED — but split into a separate file if this one passes ~150 lines or 3,000 chars>
+
+## What NOT to do
+
+- <BULLET_LIST_OF_ANTI_PATTERNS>
+- e.g. "Don't <tempting wrong thing> — <one-line reason>"
+
+## Cross-links
+
+- `docs/ai-context/<related-orientation-map>.md` — orientation for this domain.
+- `docs/<RELATED_CANONICAL_DOC>.md` — full reference.
+- `.github/instructions/<related-instructions>.instructions.md` — related path-globbed instructions.
+
+---
+
+## Notes for the instruction author
+
+(Delete this section before committing.)
+
+A good instruction file:
+- Has a real `applyTo:` glob that matches files actually being edited
+- Has a real "Why" for each rule (past incident or hard invariant — not aspirational)
+- Has a concrete "How" for each rule (the helper to use, the check to run, the pattern to follow)
+- Each rule is ≤ 4 sentences (move long detail to canonical doc)
+- Front-loads code-review-relevant rules (code review only reads first 4,000 chars)
+- Is grouped with related rules under one domain file
+
+A bad instruction file:
+- "We should always..." (aspirational; not enforced)
+- Pure style preference (lint config does this)
+- Contradicts another instruction file (have the context-librarian reconcile)
+- Has no `applyTo:` (no signal for Copilot to load it)
+- Long rationale paragraph (move to canonical doc)
+- > 150 lines / > 3,000 chars (split into multiple files)
+
+When you've shipped 3-5 rules in this file, stop. Add more only when production teaches you new gotchas.

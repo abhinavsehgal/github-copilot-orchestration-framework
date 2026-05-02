@@ -1,0 +1,42 @@
+# docs/_archive/ — Frozen historical material
+
+Stale audit reports, dated sprint/phase documents, one-off verification artifacts, and superseded planning files live here. Nothing in this directory is referenced by any active agent, instruction file, prompt, INDEX.md, or `.github/copilot-instructions.md`.
+
+## Why this exists
+
+`docs/` had drifted to N entries mixing canonical references (ARCHITECTURE.md, API.md, etc.) with dated audit/sprint/phase reports. Future engineers and Copilot couldn't easily tell which docs were authoritative vs. snapshots-in-time. Archive separates the two: `docs/` root holds canonical truth; `docs/_archive/` holds historical context.
+
+## Layout
+
+```
+_archive/
+├── 2026-03/             — dated reports from March 2026
+├── 2026-04/             — dated reports from April 2026
+├── audit-reports/       — third-party audit notes
+├── html/                — generated HTML reports
+├── screenshots/         — historical UI captures
+└── README.md            — this file
+```
+
+(Adjust the subdirectories to match what you actually have.)
+
+## Rules
+
+- **Do NOT link from active docs into _archive/.** Active documentation (`.github/copilot-instructions.md`, `docs/ai-context/*`, `.github/agents/`, `.github/instructions/`, `.github/prompts/`) must reference only canonical sources at `docs/` root or `docs/ai-context/`. Linking to archive content would resurrect drift.
+- **Do NOT delete archive content.** History matters for audits and post-mortems. If something is genuinely stale beyond reference value, propose deletion in a PR — do not silently drop it.
+- **Do NOT move content out of archive back to `docs/` root.** Archived content is frozen at the moment it was archived. If a topic is still relevant, write a fresh canonical doc that supersedes the archived one.
+- **Date subdirectories are append-only.** When adding new archived material, use the year-month folder matching when the content was originally written.
+
+## Known link rot (intentional)
+
+If you have a frozen pre-refactor `LEGACY_BACKUP.md` snapshot of the original `.github/copilot-instructions.md`, it may contain links to paths like `docs/SPRINT_*.md` that now resolve to `docs/_archive/<YYYY-MM>/...`. **Do NOT update those links** — the legacy backup represents a point-in-time snapshot. To find the actual files, look in `_archive/<YYYY-MM>/` with the same filename.
+
+## When to archive new material
+
+A doc belongs in `_archive/` when ALL of these are true:
+- It was written for a specific point-in-time event (sprint, audit, migration, incident)
+- The event is complete
+- No active instruction file, agent, or canonical doc cites it
+- Its information is either superseded by a canonical doc or only useful as historical context
+
+When in doubt, ask: would a new engineer joining the project benefit from reading this file as part of normal onboarding? If yes → keep at `docs/` root. If no → archive.

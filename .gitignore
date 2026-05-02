@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local notes / scratch
+*.local.md
+notes-private/
+SCRATCH.md
+
+# OS / temp
+*.tmp
+*.bak
+
+# Generated artifacts (the PDF is intentionally tracked — it's the shareable reference)
+# If you want to gitignore the PDF and only ship markdown sources, uncomment:
+# *.pdf

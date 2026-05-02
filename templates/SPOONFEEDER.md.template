@@ -1,0 +1,268 @@
+# <PROJECT_NAME> — Copilot Orchestration Spoonfeeder
+
+> Practical, copy-paste-friendly guide for the project owner and team. Explains how the GitHub Copilot orchestration setup works and how to drive it. Written for fast skimming.
+
+---
+
+## The mental model in one picture
+
+```
+.github/copilot-instructions.md (router, ~150 lines) ── auto-loaded on every Copilot interaction
+   │
+   ├── docs/ai-context/INDEX.md ──────────── task → docs + instructions + agent map
+   │      │
+   │      └── docs/ai-context/*.md ────────── orientation maps (50-150 lines each)
+   │             │
+   │             └── docs/*.md ──────────── canonical full-detail docs
+   │
+   ├── .github/instructions/*.instructions.md ── path-globbed (auto-load when editing matching files)
+   ├── .github/agents/*.md ─────────────── orchestrator + specialists
+   ├── .github/prompts/*.prompt.md ─────── slash-command workflows
+   └── .github/chatmodes/*.chatmode.md ──── (optional) older persona format
+```
+
+**The big idea.** Tiny `.github/copilot-instructions.md` as router. Every task picks only the docs/agents/instructions it needs. Specialist agents do focused work. The orchestrator dispatches.
+
+---
+
+## What is what
+
+| Layer | Where | What it does |
+|---|---|---|
+| Router | `.github/copilot-instructions.md` | Auto-loaded by Copilot on every interaction in this repo. Tiny. Points to everything else. |
+| Routing index | `docs/ai-context/INDEX.md` | Task type → minimum docs + instructions + agent. |
+| Spoonfeeder | `docs/ai-context/ORCHESTRATION_SPOONFEEDER.md` | This file — for humans. |
+| Handoff schema | `docs/ai-context/HANDOFF_SCHEMA.md` | Bidirectional schema for orchestrator ↔ specialist. |
+| Orientation maps | `docs/ai-context/<area>.md` | 50–150 lines each. Tool-agnostic. |
+| Canonical docs | `docs/<UPPERCASE>.md` | Untouched. Full detail. |
+| Path-globbed instructions | `.github/instructions/<domain>.instructions.md` | Auto-loaded by Copilot when editing files matching `applyTo:` glob. |
+| Specialist agents | `.github/agents/<name>.md` | One purpose each. Bounded by "I CAN" / "I CANNOT" lists + `tools:` allowlist. |
+| Orchestrator | `.github/agents/<PROJECT_SLUG>-orchestrator.md` | Manager agent. Picks specialists per task. |
+| Prompt files (slash commands) | `.github/prompts/<workflow>.prompt.md` | Repeatable workflows. Invoke via `/<workflow>` in Chat. |
+
+---
+
+## Invocation modes — which Copilot surface to use
+
+### Mode 1 — Inline completions (autocomplete)
+
+Just type. Copilot autocompletes. Loads only `.github/copilot-instructions.md` + path-matching `.github/instructions/`. No agents, no slash commands.
+
+**Use for:** typing assistance.
+
+### Mode 2 — Plain Chat (no agent selected)
+
+Open Copilot Chat (Ctrl+Cmd+I in VS Code). Type a question.
+
+**Use for:**
+- Quick questions about code
+- Single-line copy / typo fixes
+- Pure read tasks
+
+### Mode 3 — Specialist Chat (`@<specialist>`)
+
+In Copilot Chat, select a specialist from the agent dropdown OR type `@<specialist-name>` at the start of your message.
+
+**Use for:**
+- Narrow single-domain work
+- e.g. `@frontend-ui` for UI work
+- e.g. `@backend-api` for API work
+- e.g. `@qa-functional` for QA pass
+- e.g. `@legal-compliance` for review-only session
+
+The agent's `tools:` allowlist physically restricts what it can do.
+
+### Mode 4 — Orchestrator Chat (`@<PROJECT_SLUG>-orchestrator`)
+
+Select the orchestrator agent from the dropdown OR type `@<PROJECT_SLUG>-orchestrator` at the start of your message.
+
+**Use for:**
+- Anything spanning more than one role
+- Anything spanning more than one feature area
+- Data integrity, payments, security/privacy, compliance work
+- Bug investigations where root cause may cross layers
+- Feature builds where acceptance criteria need to be written before implementation
+- Pre-release QA across multiple roles
+- Anything where the scope is ambiguous
+
+### Mode 5 — Cloud Agent (autonomous)
+
+Assign a Copilot agent to a GitHub issue or PR. The cloud agent runs autonomously on github.com infrastructure.
+
+**Use for:** well-defined, self-contained tasks.
+
+### Mode 6 — Slash commands (`/<workflow>`)
+
+Type `/` in Chat. Pick from the prompt file picker, or type the name: `/<workflow-name>`.
+
+**Use for:** invoking a documented workflow.
+
+### Why we don't make the orchestrator the "always-on" persona
+
+Putting the orchestrator's persona in `.github/copilot-instructions.md` would auto-load it for inline completions and code review — pollution. Keep the persona in `.github/agents/<PROJECT_SLUG>-orchestrator.md` and invoke explicitly via `@<PROJECT_SLUG>-orchestrator`.
+
+---
+
+## Required reading before any non-trivial task
+
+1. `.github/copilot-instructions.md` (auto-loaded — already done by Copilot).
+2. `docs/ai-context/INDEX.md` — pick the right docs.
+3. The 1–2 orientation maps the INDEX points to.
+4. Verify the matching `.github/instructions/*.instructions.md` files auto-loaded for the paths you intend to edit.
+
+That's it. Stop adding more unless the task genuinely needs more.
+
+---
+
+## Copy-paste prompt templates
+
+### A. General orchestration
+
+```
+@<PROJECT_SLUG>-orchestrator
+
+Restate the task, identify affected roles, read only the minimum docs from
+docs/ai-context/INDEX.md, choose the right specialist agents, merge findings
+into a plan, and do not implement until the plan is clear.
+
+Task: <DESCRIBE>
+```
+
+### B. Bug investigation
+
+```
+@<PROJECT_SLUG>-orchestrator
+
+Use /investigate-bug. Investigate this bug. Focus on root cause, impacted
+roles, data correctness, smallest safe fix, and tests. Verify the matching
+.github/instructions/*.instructions.md auto-loaded for any files you edit.
+
+Bug: <DESCRIBE>
+Repro steps: <STEPS or "unknown">
+```
+
+### C. Feature build
+
+```
+@<PROJECT_SLUG>-orchestrator
+
+Use /build-feature. Plan this feature. Identify affected roles, acceptance
+criteria, frontend/backend/data/security impact, and tests before any
+implementation.
+
+Feature: <DESCRIBE>
+```
+
+### D. Functional QA
+
+```
+@qa-functional
+
+Use /qa-flow. Test this flow. Focus only on functional bugs and incorrect
+data. Do not give generic improvement suggestions unless they block
+functionality.
+
+Flow: <DESCRIBE>
+Roles to cover: <list>
+```
+
+### E. Compliance review
+
+```
+@<PROJECT_SLUG>-orchestrator
+
+Use /compliance-review. Coordinate @legal-compliance and @security-privacy.
+Review this feature for relevant regulations. Do not claim final advice.
+Produce a reviewer-checklist.
+
+Feature: <DESCRIBE>
+```
+
+### F. Release readiness
+
+```
+@release-devops
+
+Review release readiness for the change below. Check build, tests, env vars,
+staging vs production, cron jobs, rollback plan, and risks.
+
+Change: <DESCRIBE>
+Target: staging / production
+```
+
+### G. Context cleanup
+
+```
+@context-librarian
+
+Tidy the docs/ai-context/, .github/instructions/, .github/agents/,
+.github/prompts/ surface. Consolidate duplicates, flag conflicts (do not
+silently resolve), keep .github/copilot-instructions.md small.
+
+Scope: <DESCRIBE>
+```
+
+---
+
+## Definition of done — every task
+
+A task is complete only when the agent reports:
+
+1. What changed (files touched).
+2. Why it changed.
+3. **Which `.github/instructions/*.instructions.md` files applied to your edits.**
+4. Roles affected.
+5. Tests / checks run.
+6. Risks remaining.
+7. Whether security/privacy review is needed.
+8. Whether legal/compliance review is needed.
+9. Whether docs/context need updates.
+
+If any of these is missing, the task is not done.
+
+---
+
+## Anti-patterns
+
+- **Don't put the orchestrator persona in `.github/copilot-instructions.md`.** It auto-loads everywhere — pollutes inline completions and code review.
+- **Don't write rules without `applyTo:`** in `.github/instructions/`. Without the glob, Copilot has no signal to load them.
+- **Don't omit `tools:`** on a specialist. Defaulting to "all tools" defeats defense-in-depth.
+- **Don't use every agent for every task.** Pick the minimum.
+- **Don't broadly refactor while fixing a bug.** Make the smallest safe change.
+- **Don't claim compliance is solved without qualified-reviewer sign-off.**
+- **Don't put debug notes in `.github/copilot-instructions.md`.** That file should be a tight router.
+- **Don't follow this plan blindly.** Re-read the current repo state.
+
+---
+
+## How instructions actually load (important)
+
+`.github/instructions/<NAME>.instructions.md` files are **auto-loaded by Copilot when you edit a file whose path matches the `applyTo:` glob in the frontmatter**. You don't have to invoke them manually.
+
+But: **verify they loaded.** A typo in `applyTo:` means the instruction silently doesn't load. The orchestrator's Definition of Done explicitly requires the list of instruction files that applied. If you see a task summary with no instructions listed, the agent skipped that step — push back.
+
+---
+
+## Cloud Agent vs IDE Chat — when to pick which
+
+| Task profile | Pick |
+|---|---|
+| Interactive, iterative, ambiguous scope | IDE Chat |
+| Cross-domain, production-sensitive | IDE Chat with `@<PROJECT_SLUG>-orchestrator` |
+| Narrow, single-domain | IDE Chat with `@<specialist>` |
+| Well-defined, self-contained, junior-level | Cloud Agent (assign GitHub issue) |
+| Need to step away while it works | Cloud Agent |
+| Sensitive code that should stay in IDE | IDE Chat |
+
+---
+
+## Reminder for Copilot when starting a session
+
+```
+Re-read .github/copilot-instructions.md and docs/ai-context/INDEX.md.
+Identify task type → pick the minimum docs + agent.
+Verify .github/instructions/*.instructions.md auto-loaded for paths you'll edit.
+Use a specialist agent via @<name> only when useful.
+Smallest safe change.
+Definition of done includes instruction files referenced.
+```

@@ -1,0 +1,85 @@
+---
+description: <ONE_SENTENCE_DESCRIPTION_OF_WHEN_TO_USE_THIS — appears in the /command picker>
+---
+
+# <Prompt Display Name>
+
+> **Invocation.** In Copilot Chat (VS Code / Visual Studio / JetBrains), type `/<this-filename-without-extension>` to invoke. The chat will ask for any `${input:NAME:HINT}` values.
+
+## When to invoke
+
+- <BULLET_LIST_OF_TRIGGER_CONDITIONS>
+- e.g. "Pre-release validation of a new feature."
+- e.g. "Bug investigation requires browser repro."
+- e.g. "Periodic sanity sweep across roles."
+
+## When NOT to invoke
+
+- <BULLET_LIST_OF_ANTI_TRIGGERS>
+- e.g. "Authoring code fixes (delegate to topic specialists)."
+
+## Inputs
+
+- `${input:goal:What is the high-level goal of this task?}`
+- `${input:scope:Which paths/components are in scope?}`
+- <OTHER_INPUTS_AS_NEEDED>
+
+## Workflow
+
+### 1. <Step name>
+
+<2-4 SENTENCES — what to do, what to produce, what to verify before moving on>
+
+### 2. <Step name>
+
+<...>
+
+### 3. <Step name>
+
+<...>
+
+### 4. <Step name>
+
+<...>
+
+### 5. <Step name>
+
+<...>
+
+(Aim for 5-10 steps. More than 10 is a smell — split into sub-prompts.)
+
+## Definition of Done
+
+1. <ARTIFACT_1 — e.g. "Severity-ranked findings list">
+2. <ARTIFACT_2 — e.g. "Files changed (paths)">
+3. <ARTIFACT_3 — e.g. "Tests run (commands + results)">
+4. <VERIFICATION — e.g. "Build passes locally">
+5. **Instruction files that applied** (the `.github/instructions/*.instructions.md` paths that auto-loaded for any code edits).
+
+## Cross-links
+
+- `.github/agents/<related-agent>.md` — the specialist this prompt typically pairs with.
+- `.github/instructions/<related-instructions>.instructions.md` — the rules this prompt enforces.
+- `docs/ai-context/<related-orientation>.md` — orientation for the domain.
+
+---
+
+## Notes for the prompt author
+
+(Delete this section before committing.)
+
+A good prompt file:
+- Is invoked 3+ times per quarter (otherwise it's not really a recurring workflow)
+- Has clear steps with verification between them
+- Uses `${input:NAME:HINT}` for any user-supplied values
+- Pairs with a specific specialist agent (typically named in cross-links)
+- Cites the instructions it enforces
+
+A bad prompt file:
+- Vague trigger condition ("when something feels complex")
+- Workflow steps that are really just "use Copilot smartly"
+- No clear Definition of Done
+- Duplicates an agent's body content (the agent already knows its own contract)
+- Tries to substitute for an agent (use an agent instead)
+
+If you find yourself writing a prompt that's just a checklist of generic best practices, you don't need a prompt file — your team needs a code review checklist or a runbook in the canonical docs.

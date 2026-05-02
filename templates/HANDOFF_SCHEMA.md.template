@@ -1,0 +1,236 @@
+# <PROJECT_NAME> — Multi-Agent Handoff Schema
+
+> Single source of truth for how the orchestrator delegates to specialists, and how specialists return findings. Bidirectional. Documentation-only — no runtime enforcement (the schema is enforced by agents following their instructions, plus the `tools:` allowlist on each agent).
+
+## Why this exists
+
+<PROJECT_NAME> runs an orchestrator-worker pattern (`.github/agents/<PROJECT_SLUG>-orchestrator.md` + N specialists). Without a structured handoff:
+
+- Orchestrator delegations can be vague ("fix the bug") and the specialist hallucinates the missing context.
+- Specialist responses can omit which claims were verified vs. assumed, so the orchestrator passes assumptions to the next specialist as fact.
+- Cascading hallucinations compound across hops because nothing forces evidence-to-claim binding at the boundary.
+
+This schema closes both gaps with two YAML blocks and one universal evidence rule.
+
+## Universal evidence rule
+
+> **No evidence, no claim.** If a claim cannot be tied to a file, line, table, column, instruction file, doc, test, or command output, it must be marked as an assumption (`confidence: low` outbound, or moved to `unverified_claims` inbound) and cannot be passed downstream as fact.
+
+This rule applies to BOTH directions of every handoff. It is repeated verbatim in `.github/agents/<PROJECT_SLUG>-orchestrator.md` and in every specialist agent file.
+
+## Outbound: orchestrator → specialist
+
+When the orchestrator `@`-mentions a specialist (or invokes via the cloud agent flow), the prompt body MUST include this YAML block at the top:
+
+```yaml
+handoff:
+  schema_version: 1
+  handoff_id: <short unique id, e.g. h-2026-05-02-a3f>
+  from_agent: <PROJECT_SLUG>-orchestrator
+  to_agent: <specialist name, e.g. backend-api>
+  goal: <one sentence — what done looks like>
+  task_class: <bug | feature | review | qa | refactor | audit>
+  affected_roles: [<role1>, <role2>]
+  claims:
+    - claim: <factual statement the orchestrator is committing to>
+      evidence: <path/to/file.ts:42 OR instruction:.github/instructions/foo.instructions.md OR doc:docs/ARCHITECTURE.md#section OR table:column OR test:path OR command:output>
+      confidence: <high | medium | low>
+  verify_before_acting:
+    - <claim or assumption the specialist MUST re-verify against source before editing>
+  failure_condition: <one sentence — observable evidence that proves the orchestrator's hypothesis or delegation premise is wrong. If the specialist observes this, it MUST stop and return status: claim_rejected (or needs_clarification) instead of editing on a false premise.>
+  in_scope:
+    - <path or component the specialist may edit>
+  out_of_scope:
+    - <path or component the specialist must NOT touch — even if "while we're in there">
+  instructions_to_read:
+    - <.github/instructions/<NAME>.instructions.md path that applies to in-scope files, OR "specialist will discover from applyTo: globs">
+  expected_artifacts:
+    - <file changed, test added, summary section, etc.>
+  hop_context:
+    parent_task: <one line — why the orchestrator is delegating this>
+    previous_specialist: <agent name or "none">
+    previous_findings_summary: <one line — what came back, or "n/a">
+```
+
+### Field rules (outbound)
+
+| Field | Required | Notes |
+|---|---|---|
+| `schema_version` | yes | Currently `1`. Bump on breaking changes. |
+| `handoff_id` | yes | Short unique id. Specialist echoes it in the return so they pair. |
+| `from_agent` | yes | Always `<PROJECT_SLUG>-orchestrator` for outbound. |
+| `to_agent` | yes | The specialist's `name` field from its `.github/agents/<NAME>.md` frontmatter. |
+| `goal` | yes | One sentence. |
+| `task_class` | yes | One of the six values. |
+| `affected_roles` | yes | Non-empty list. |
+| `claims` | yes (may be empty list) | Every entry MUST have `evidence`. |
+| `verify_before_acting` | yes if task touches code | Empty allowed only for pure-research handoffs. |
+| `failure_condition` | yes | One sentence. The inverse of `verify_before_acting`. |
+| `in_scope` | yes | Non-empty list. |
+| `out_of_scope` | yes | Empty list `[]` is valid. Missing key is not. |
+| `instructions_to_read` | yes | Use `["specialist will discover from applyTo globs"]` if you don't know. |
+| `expected_artifacts` | yes | Drives the specialist's `files_changed` / `tests_run` later. |
+| `hop_context` | yes | All three sub-fields required. Use `none` / `n/a` for first hop. |
+
+## Inbound: specialist → orchestrator (return schema)
+
+Every specialist response MUST end with this YAML block:
+
+```yaml
+return:
+  schema_version: 1
+  handoff_id: <copy from inbound — pairs the response>
+  from_agent: <specialist name>
+  to_agent: <PROJECT_SLUG>-orchestrator
+  status: <completed | blocked | needs_clarification | claim_rejected>
+  verified_claims:
+    - claim: <orchestrator claim that was confirmed against source>
+      evidence: <path:line or command output the specialist saw>
+  rejected_claims:
+    - claim: <orchestrator claim that turned out to be wrong>
+      evidence: <what the specialist actually found>
+  unverified_claims:
+    - claim: <orchestrator claim that was not checked>
+      reason: <why — out of scope, infra not available, etc.>
+  evidence_used:
+    - <path:line, instruction file, doc anchor, or command output the specialist relied on>
+  files_changed:
+    - <path:line range and one-line summary>
+  tests_run:
+    - <command + result>
+  risks:
+    - <risk + mitigation or "none">
+  recommended_next_agent:
+    agent: <specialist name or "none">
+    why: <one line>
+  do_not_pass_downstream_without_verification:
+    - <claim or finding from this specialist that the orchestrator must NOT propagate to the next specialist as fact without re-verification>
+```
+
+### Field rules (inbound)
+
+| Field | Required | Notes |
+|---|---|---|
+| `schema_version` | yes | Must match outbound. |
+| `handoff_id` | yes | Must echo the inbound id verbatim. |
+| `from_agent` / `to_agent` | yes | Self-explanatory. |
+| `status` | yes | `completed` only if all `verify_before_acting` items checked. |
+| `verified_claims` | yes (may be `[]`) | Empty list is valid. |
+| `rejected_claims` | yes (may be `[]`) | Non-empty implies `status: claim_rejected` or `blocked`. |
+| `unverified_claims` | yes (may be `[]`) | Anything you accepted from inbound without re-checking goes here. |
+| `evidence_used` | yes | Real paths/commands. "I read the codebase" is not evidence. |
+| `files_changed` | yes (may be `[]`) | Empty list valid for review/audit. |
+| `tests_run` | yes (may be `[]`) | Empty list valid for pure-doc changes. |
+| `risks` | yes | Use `["none"]` if there are genuinely none. |
+| `recommended_next_agent` | yes | `agent: "none"` if work is complete. |
+| `do_not_pass_downstream_without_verification` | yes | Cascading-hallucination defense. |
+
+## Refusal (specialist response when handoff is invalid)
+
+If the inbound handoff fails the field rules, the specialist responds with ONLY this block, does no other work, and waits for the orchestrator to re-issue:
+
+```yaml
+return:
+  schema_version: 1
+  handoff_id: <copy from inbound, or "missing" if absent>
+  from_agent: <specialist name>
+  to_agent: <PROJECT_SLUG>-orchestrator
+  status: needs_clarification
+  reason: handoff_schema_invalid
+  missing_or_invalid_fields:
+    - field: <field name>
+      problem: <what's wrong — missing, vague, no evidence, etc.>
+  required_action:
+    - <what the orchestrator must add or fix before re-issuing>
+```
+
+## Worked examples
+
+### Example 1 — <REPLACE WITH PROJECT-SPECIFIC EXAMPLE: bug investigation>
+
+**Outbound:**
+
+```yaml
+handoff:
+  schema_version: 1
+  handoff_id: h-2026-XX-XX-bug-001
+  from_agent: <PROJECT_SLUG>-orchestrator
+  to_agent: <YOUR_BACKEND_SPECIALIST>
+  goal: <REPLACE WITH A REAL BUG INVESTIGATION GOAL FROM YOUR PROJECT>
+  task_class: bug
+  affected_roles: [<your-role>]
+  claims:
+    - claim: <REAL CLAIM WITH EVIDENCE FROM YOUR CODEBASE>
+      evidence: <real path:line>
+      confidence: high
+  verify_before_acting:
+    - <real verification step>
+  failure_condition: <real falsification condition>
+  in_scope:
+    - <real path>
+  out_of_scope:
+    - <real adjacent path that should NOT be touched>
+  instructions_to_read:
+    - <real instructions path>
+  expected_artifacts:
+    - <real expected outcome>
+  hop_context:
+    parent_task: <real triggering context>
+    previous_specialist: none
+    previous_findings_summary: n/a
+```
+
+**Return:**
+
+```yaml
+return:
+  schema_version: 1
+  handoff_id: h-2026-XX-XX-bug-001
+  from_agent: <YOUR_BACKEND_SPECIALIST>
+  to_agent: <PROJECT_SLUG>-orchestrator
+  status: completed
+  verified_claims:
+    - claim: <claim from inbound>
+      evidence: <verification evidence>
+  rejected_claims: []
+  unverified_claims: []
+  evidence_used:
+    - <real path:line>
+  files_changed:
+    - <real file:line range and summary>
+  tests_run:
+    - <real command + result>
+  risks:
+    - <real risk or "none">
+  recommended_next_agent:
+    agent: qa-functional
+    why: <real reason>
+  do_not_pass_downstream_without_verification: []
+```
+
+### Example 2 — <REPLACE WITH PROJECT-SPECIFIC EXAMPLE: feature build>
+
+[Pattern as above; customize for your stack and roles.]
+
+### Example 3 — <REPLACE WITH PROJECT-SPECIFIC EXAMPLE: review/audit>
+
+[Pattern as above; customize for your REVIEW-ONLY specialist.]
+
+## How agents reference this file
+
+- `.github/agents/<PROJECT_SLUG>-orchestrator.md` requires the outbound block on every `@<specialist>` invocation and consumes the inbound block before merging.
+- Each specialist agent file under `.github/agents/` (excluding orchestrator) requires validating the inbound block, refusing if invalid, and emitting the return block on every response.
+- `.github/copilot-instructions.md` golden rule references this doc.
+- `docs/ai-context/INDEX.md` routes "Multi-agent handoff format" questions here.
+
+## Versioning
+
+- `schema_version: 1` is the current version. Bump only on breaking changes.
+- Additive changes (new optional fields) keep version 1.
+- When bumping, update HANDOFF_SCHEMA.md first, then every agent file in the same PR.
+
+## Cross-links
+
+- `.github/agents/<PROJECT_SLUG>-orchestrator.md` — the issuer
+- `docs/ai-context/ORCHESTRATION_SPOONFEEDER.md` — human-facing usage guide
+- `docs/ai-context/INDEX.md` — task routing

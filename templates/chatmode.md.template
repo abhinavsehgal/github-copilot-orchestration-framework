@@ -1,0 +1,58 @@
+---
+description: <ONE_SENTENCE_PERSONA_DESCRIPTION — appears in the chat mode dropdown>
+tools: ['codebase', 'search', 'usages', 'problems', 'changes']
+model: <optional — leave unset to use default>
+---
+
+# <Chat Mode Display Name>
+
+> ⚠ **Recommendation:** for new projects, prefer `.github/agents/<NAME>.md` (custom agent format) over `.github/chatmodes/<NAME>.chatmode.md` (older format). `.agent.md` is the more future-proof format with more metadata fields.
+>
+> Use this template only if you specifically need a chat-mode-only feature, OR if you have legacy chat-mode files you don't want to migrate yet.
+
+<2-3 SENTENCE PERSONA DESCRIPTION — what role does this Copilot mode adopt? When is it most useful?>
+
+## When to use this mode
+
+- <BULLET_LIST_OF_TRIGGER_CONDITIONS>
+
+## When NOT to use this mode
+
+- <BULLET_LIST_OF_ANTI_TRIGGERS>
+
+## Constraints
+
+- <BULLET_LIST_OF_HARD_CONSTRAINTS>
+- e.g. "Never edit production migration files."
+- e.g. "Always cite file:line for any claim about existing code."
+
+## Style guide
+
+<BULLET_LIST_OF_RESPONSE_STYLE_PREFERENCES>
+- e.g. "Prefer concise answers over comprehensive ones."
+- e.g. "Use code blocks for any code samples."
+
+## Cross-links
+
+- `docs/ai-context/<orientation-map>.md`
+- `.github/instructions/<related-instructions>.instructions.md`
+
+---
+
+## Notes for the chat mode author
+
+(Delete this section before committing.)
+
+Chat modes (`.chatmode.md`) and custom agents (`.agent.md`) overlap heavily. Differences:
+
+| Feature | `.chatmode.md` | `.agent.md` |
+|---|---|---|
+| Tool allowlist (`tools`) | Yes | Yes |
+| Model selection (`model`) | Yes | Yes |
+| MCP server scoping (`mcp-servers`) | Limited | Full support |
+| Environment scoping (`target`) | No | Yes (`vscode`, `github-copilot`) |
+| User-invocable / auto-routing (`user-invocable`, `disable-model-invocation`) | No | Yes |
+| Cloud agent support | No | Yes |
+| Cross-IDE consistency | Some drift | Better |
+
+Recommended: use `.agent.md` for new work. Keep this template in case you have legacy chat-mode files to maintain.

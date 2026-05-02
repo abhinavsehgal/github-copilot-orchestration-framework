@@ -1,0 +1,74 @@
+# <PROJECT_NAME> — AI Context Index
+
+> Master router. Map every common task type to the **minimum** docs and agents needed. Read this file early in any non-trivial task.
+
+---
+
+## How to use this index
+
+1. Restate the task in plain words.
+2. Skim "Task type → Read this" below.
+3. Read ONLY the listed docs (they are 50–150 lines each).
+4. If the task is medium/complex, hand it to `@<PROJECT_SLUG>-orchestrator` (it picks the rest).
+5. **Path-matching `.github/instructions/*.instructions.md` files auto-load when you edit matching files. Verify they loaded.**
+
+---
+
+## Task type → Read this
+
+| Task type | docs/ai-context/ to read | .github/instructions/ that may apply | Agent (optional) |
+|---|---|---|---|
+| <ROLE_1> dashboard / progress / history | `<role-1>-experience.md` | `<frontend>.instructions.md`, `<backend>.instructions.md` | `@<frontend-specialist>`, `@<backend-specialist>` |
+| <ROLE_2> dashboard / billing / settings | `<role-2>-experience.md` | `<frontend>.instructions.md`, `<backend>.instructions.md` | `@<frontend-specialist>`, `@<backend-specialist>` |
+| <FEATURE_AREA_1> | `<feature-1>.md` | `<feature-1>.instructions.md` | `@<feature-1-specialist>` |
+| <FEATURE_AREA_2> | `<feature-2>.md` | `<feature-2>.instructions.md` | `@<feature-2-specialist>` |
+| Database / schema / migrations | `database-schema-guide.md` | `<database>.instructions.md` | `@<database-specialist>` |
+| Auth / sessions / data exposure | `security-privacy.md` | `<security>.instructions.md` | `@security-privacy` |
+| Compliance review / regulatory | `legal-compliance.md`, `security-privacy.md` | `<security>.instructions.md` | `@legal-compliance`, `@security-privacy` |
+| Tests / E2E | `testing-strategy.md` | `<testing>.instructions.md` | `@qa-functional` |
+| Build / deploy / cron / env | `release-deployment.md` | `<deploy>.instructions.md` | `@release-devops` |
+| Cross-role behavior / acceptance criteria | `roles-and-permissions.md` + role-specific docs | varies | `@product-flow` |
+| Docs / agents / instructions cleanup | (this file + `ORCHESTRATION_SPOONFEEDER.md`) | n/a | `@context-librarian` |
+| Multi-agent handoff format | `HANDOFF_SCHEMA.md` | n/a | `@<PROJECT_SLUG>-orchestrator` (issuer) + every specialist (receiver) |
+
+---
+
+## Worked routing examples
+
+(Replace these with examples specific to your project.)
+
+### Example 1 — "<COMMON_BUG_PATTERN_FOR_YOUR_PROJECT>"
+
+1. Read `<orientation-map-1>.md`.
+2. When you start editing matching files, `.github/instructions/<rule>.instructions.md` will auto-load.
+3. Hand to `@<PROJECT_SLUG>-orchestrator` if scope grows; else go directly to `@<specialist-name>`.
+
+### Example 2 — "<COMMON_FEATURE_REQUEST_FOR_YOUR_PROJECT>"
+
+1. Read `<orientation-map-1>.md` + `<orientation-map-2>.md`.
+2. Use prompt file: `/build-feature` in Copilot Chat.
+3. Agent: `@product-flow` (acceptance criteria) → topic specialists.
+
+### Example 3 — "<COMMON_AUDIT_PATTERN_FOR_YOUR_PROJECT>"
+
+1. Read `<orientation-map>.md`.
+2. Instructions auto-load when reviewing matching paths.
+3. Use prompt file: `/compliance-review`.
+4. Agent: `@<audit-specialist-name>`.
+
+---
+
+## Reference docs (canonical — don't duplicate; link to them)
+
+- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md`
+- Architecture: `docs/ARCHITECTURE.md`
+- API reference: `docs/API.md`
+- Tech stack: `docs/TECH_STACK.md`
+- Product requirements: `docs/PRODUCT_REQUIREMENTS.md`
+- <PROJECT_SPECIFIC_CANONICAL_DOCS>
+
+---
+
+## Pre-refactor source (optional)
+
+If you migrated from a single huge `.github/copilot-instructions.md`, the original is preserved verbatim at `docs/ai-context/LEGACY_BACKUP.md`. The migration ledger at `docs/ai-context/MIGRATION_LEDGER.md` tracks every section/gotcha through the multi-wave migration.
