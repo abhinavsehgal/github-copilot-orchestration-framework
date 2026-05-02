@@ -121,6 +121,24 @@ Estimated time: **45 min - 1 hour**.
 
 ### Scenario B — Existing project (brownfield)
 
+⚠ **If your project ALREADY has Copilot configuration** (e.g. you ran VS Code's `/init`, or your team has been adding to `.github/copilot-instructions.md` for months), the bootstrap will detect this and ask before overwriting. The framework includes mandatory pre-flight safety checks:
+
+- **Pre-flight 1** — auto-snapshot existing config to `.github-pre-bootstrap-backup/`
+- **Pre-flight 2** — naming-collision check (per file — STOP for explicit user decision)
+- **Pre-flight 3** — `applyTo:` glob conflict check
+- **Pre-flight 4** — drift detection on existing `.github/copilot-instructions.md`
+- **Pre-flight 5** — existing chatmode/agent style detection
+- **Decision gate** — STOP if any pre-flight raised a `<NEEDS USER CONFIRMATION>` flag
+
+You can also do an extra manual snapshot before starting:
+```bash
+mkdir -p .github-pre-bootstrap-backup
+cp -r .github .github-pre-bootstrap-backup/ 2>/dev/null
+[ -f AGENTS.md ] && cp AGENTS.md .github-pre-bootstrap-backup/
+```
+
+The framework's BOOTSTRAP-PROMPT will repeat the snapshot inside the prompt — this is just belt-and-suspenders.
+
 ```bash
 # 1. Verify Copilot is installed and you're signed in
 
@@ -136,19 +154,23 @@ git checkout -b setup/copilot-orchestration
 #    Replace <framework path> with the absolute path to this repo on your machine
 
 # 5. Review/adjust Copilot's proposed inventory + answer Open Questions
+#    INVENTORY scans for existing .github/agents/, /instructions/, /prompts/, /chatmodes/, AGENTS.md
 
 # 6. Paste prompts/BOOTSTRAP-PROMPT.md (in the same Chat session)
+#    BOOTSTRAP runs pre-flight safety checks BEFORE creating any files
+#    If existing config is detected, you'll be asked to confirm per-file decisions
 
 # 7. Verify in terminal
 ls .github/agents/                # should list your project specialists
 ls .github/instructions/          # should list your path-globbed instructions
 ls .github/prompts/               # should list your prompt files
+diff .github-pre-bootstrap-backup/copilot-instructions.md .github/copilot-instructions.md  # if existed
 
 # 8. Test in Chat — pick a real task
 #    In VS Code Chat: select your orchestrator agent from the agent picker
 #    Or: type @<project-slug>-orchestrator <your task>
 
-# 9. Commit and PR
+# 9. Commit and PR (note: .github-pre-bootstrap-backup/ is gitignored)
 git add .github/ docs/ai-context/ docs/_archive/ AGENTS.md .gitignore
 git commit -m "chore: bootstrap GitHub Copilot orchestration framework"
 git push -u origin setup/copilot-orchestration

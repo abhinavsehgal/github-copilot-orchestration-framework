@@ -158,7 +158,21 @@ Putting all rules into `.github/copilot-instructions.md` defeats the purpose of 
 - Move long architecture explanations to `docs/<UPPERCASE>.md`
 - Move sprint history to `docs/_archive/`
 
-## Pitfall 17: Forgetting that custom agents are per-repository
+## Pitfall 17: Bootstrap on a repo with existing Copilot config
+
+If you ran VS Code's `/init` previously, or your team has been adding to `.github/copilot-instructions.md` for months, BOOTSTRAP-PROMPT.md must NOT silently overwrite that work.
+
+**Right answer:** the prompt now includes mandatory pre-flight checks at the top — snapshot to `.github-pre-bootstrap-backup/`, naming-collision detection, `applyTo:` glob conflict detection, drift detection on existing instructions, and a decision gate that STOPS if any pre-flight raised a `<NEEDS USER CONFIRMATION>` flag.
+
+**Specific risks:**
+- Existing `.github/copilot-instructions.md` with team rules → Pre-flight 4 (drift detection) flags stale content; Step 11 (merge step) shows a 3-pane diff before writing.
+- Existing `.github/agents/<name>.md` with same name as a proposed specialist → Pre-flight 2 (naming collision check) STOPS for explicit user decision per file.
+- Existing `.github/instructions/` with overlapping `applyTo:` → Pre-flight 3 detects glob overlap; both files would load creating contradictory rules.
+- Existing `.github/chatmodes/` heavily used → Pre-flight 5 surfaces the parallel system; user decides migrate vs coexist.
+
+**The pre-flight workflow is non-optional** — even on apparent greenfield projects, run it. Cost is 30 seconds; benefit is never silently destroying team work.
+
+## Pitfall 18: Forgetting that custom agents are per-repository
 
 `.github/agents/<NAME>.md` is per-repo. If you have multiple repos and want shared agents, you have two options:
 - Copy agent files into each repo (drift risk)
