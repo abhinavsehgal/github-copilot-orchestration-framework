@@ -2,6 +2,22 @@
 
 All notable changes to the GitHub Copilot Orchestration Framework. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.2] — 2026-05-06
+
+### Companion release to claude-orchestration-framework v1.1.2
+
+The Copilot framework has **no behavioral changes** in this release because GitHub Copilot doesn't expose programmable lifecycle hooks (Stop / PreToolUse) — see Pitfall 19. The fix that triggered the matched-version bump applies to `claude-orchestration-framework`'s `templates/hooks/correction-capture-prompt.mjs.template` and `build-gate.mjs.template` only.
+
+### Added — cross-framework lesson
+
+- **`docs/10-MECHANICAL-ENFORCEMENT.md`** updated with a sidebar note: *"If you're working on the Claude side of a dual-framework setup, the Stop hook IO contract matters — stderr surfaces, stdout doesn't. The Copilot side has no equivalent because Copilot has no programmable hook events."* Reduces the chance that an adopter using both frameworks ports a buggy pattern between them.
+
+### Why bump the version anyway
+
+Matched version numbers across the two companion frameworks make it easier to communicate compatibility ("if you're on Claude framework v1.1.2, use Copilot framework v1.1.2"). No behavioral change here, just a sync-point release.
+
+---
+
 ## [1.1.0] — 2026-05-06
 
 ### Added — mechanical enforcement patterns

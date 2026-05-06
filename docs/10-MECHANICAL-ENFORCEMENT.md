@@ -152,6 +152,16 @@ Copilot has no event for "after the file was just edited, run X." This belongs a
 
 If you don't have an editor-level auto-fix yet, fix that before adopting any other parts of this chapter. Copilot will write code at whatever style your editor formats to; if your editor doesn't format on save, every PR will have formatting noise and Copilot has no way to fix it server-side.
 
+### Lesson from the Claude framework's v1.1.0 → v1.1.2 sequence
+
+If you're running this Copilot framework alongside [`claude-orchestration-framework`](https://github.com/abhinavsehgal/claude-orchestration-framework), one cautionary note from the Claude side that *can't apply here* but is worth knowing:
+
+Claude Code's Stop hooks have a counterintuitive IO contract — `stdout` is captured but NOT surfaced into the model's next turn; only `stderr` is. The Claude framework's v1.1.0 shipped Stop hook templates that wrote reminders to stdout, which meant the reminders correctly produced + the exit code was correct, but the model never saw them. v1.1.2 fixed it by switching to stderr.
+
+This whole class of bug doesn't exist on the Copilot side because Copilot has no programmable hook events. The Pattern 1 / Pattern 2 / Pattern 3 / Pattern 5 translations above are all manual or declarative, not driven by an event runtime, so there's no "wrong IO channel" failure mode.
+
+If you author hook scripts for Claude Code based on Copilot patterns you've translated mentally, remember that on the Claude side: **Stop hooks → stderr; PreToolUse hooks → stdout.**
+
 ### Hooks-on-Cloud-Agent
 
 The Copilot Cloud Agent (autonomous agent) runs in GitHub Actions with no access to per-developer settings. Hooks-style runtime enforcement on the Cloud Agent would require GitHub Actions workflow steps — outside the framework's surface area. The framework's documentation discipline applies fully to the Cloud Agent because instruction files and prompt files are repository state, not local config.

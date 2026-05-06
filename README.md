@@ -1,6 +1,8 @@
 # GitHub Copilot Orchestration Framework
 
-> **Version 1.1.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack agnostic
+> **Version 1.1.2** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack agnostic
+>
+> v1.1.2 is a sync-point release matching [`claude-orchestration-framework v1.1.2`](https://github.com/abhinavsehgal/claude-orchestration-framework/releases/tag/v1.1.2). No behavioral changes in the Copilot framework — Copilot doesn't have programmable hooks. See [CHANGELOG.md](CHANGELOG.md#112--2026-05-06).
 >
 > **Purpose.** A reusable multi-agent orchestration setup for [GitHub Copilot](https://docs.github.com/en/copilot) that prevents cascading hallucinations, enforces evidence-based handoffs between Copilot custom agents, and makes Copilot usable on production codebases by teams. Tech-stack agnostic — drops into any project (web, mobile, backend, ML, infra) in 2-4 hours.
 
