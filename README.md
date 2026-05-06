@@ -1,5 +1,7 @@
 # GitHub Copilot Orchestration Framework
 
+> **Version 1.1.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack agnostic
+>
 > **Purpose.** A reusable multi-agent orchestration setup for [GitHub Copilot](https://docs.github.com/en/copilot) that prevents cascading hallucinations, enforces evidence-based handoffs between Copilot custom agents, and makes Copilot usable on production codebases by teams. Tech-stack agnostic — drops into any project (web, mobile, backend, ML, infra) in 2-4 hours.
 
 This framework uses GitHub Copilot's **own** customization surface — `.github/copilot-instructions.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/chatmodes/` — and adds documentation conventions on top. No external tools, no extensions, no Marketplace dependencies.
@@ -48,7 +50,7 @@ github-copilot-orchestration-framework/
 ├── GitHub-Copilot-Orchestration-Framework.pdf   ← consolidated printable
 ├── LICENSE
 │
-├── docs/                                 ← framework documentation (9 chapters)
+├── docs/                                 ← framework documentation (10 chapters)
 │   ├── 01-PRINCIPLES.md                  ← seven core principles
 │   ├── 02-ARCHITECTURE.md                ← .github/ layout (instructions / prompts / agents / chatmodes)
 │   ├── 03-AGENTS-GUIDE.md                ← how to design orchestrator + specialists for Copilot
@@ -56,8 +58,9 @@ github-copilot-orchestration-framework/
 │   ├── 05-INSTRUCTIONS-AND-PROMPTS.md    ← path-globbed instructions + prompt files
 │   ├── 06-INVOCATION-MODES.md            ← Chat vs Edit vs Cloud Agent vs CLI
 │   ├── 07-FOLDER-STRUCTURE.md            ← three-tier doc organization
-│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific lessons + framework lessons
-│   └── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
+│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (19 in v1.1)
+│   ├── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
+│   └── 10-MECHANICAL-ENFORCEMENT.md      ← (v1.1) translating Claude Code hook patterns onto Copilot's `applyTo:` + prompt-file surface
 │
 ├── prompts/                              ← ready-to-paste Chat prompts for bootstrapping
 │   ├── INVENTORY-PROMPT.md
@@ -75,7 +78,9 @@ github-copilot-orchestration-framework/
     ├── instructions.md.template             ← .github/instructions/<name>.instructions.md
     ├── prompt.md.template                   ← .github/prompts/<name>.prompt.md
     ├── chatmode.md.template                 ← .github/chatmodes/<name>.chatmode.md
-    └── archive-README.md.template
+    ├── archive-README.md.template
+    ├── correction-capture.prompt.md.template  ← (v1.1) /correction-capture — manual workflow that hardens user corrections into instruction-file patches
+    └── commit-push-pr.prompt.md.template      ← (v1.1) /commit-push-pr — daily commit→PR workflow with the project's golden rules baked in
 ```
 
 ---

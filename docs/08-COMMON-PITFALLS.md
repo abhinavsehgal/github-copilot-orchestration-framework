@@ -181,3 +181,18 @@ If you ran VS Code's `/init` previously, or your team has been adding to `.githu
 Personal-tier Copilot doesn't support cross-repo agents.
 
 **Right answer:** For multi-repo orgs on Business/Enterprise, define shared infrastructure in `.github-private/`. For personal/single-repo, just keep agents in the one `.github/`.
+
+## Pitfall 19: Expecting a Stop hook or PostToolUse hook in Copilot
+
+Copilot does **not** expose programmable lifecycle events. There is no equivalent of Claude Code's `PreToolUse` / `PostToolUse` / `Stop` hooks. If you've come from Claude Code and are looking for "the place to wire correction-capture / build-gate / lint-fix automation," it doesn't exist on Copilot's surface.
+
+What Copilot has instead:
+
+- **Declarative auto-loading** via `applyTo:` frontmatter on `.github/instructions/*.instructions.md` — the platform-native equivalent of Claude Code's `PreToolUse` rule-surfacing hook. Strictly better in one way (zero scripting, can't fail silently).
+- **Manually-invoked prompts** via `.github/prompts/*.prompt.md` — these cover what would be slash commands on Claude Code, and they substitute for some Stop-hook patterns when invoked explicitly (see `docs/10-MECHANICAL-ENFORCEMENT.md`).
+- **Definition-of-Done discipline** in agent instructions — substitutes for the build-gate Stop hook, but requires the orchestrator to actually validate the return-block contract.
+- **IDE-level auto-fix and pre-commit hooks** — substitute for the `PostToolUse` lint-fix pattern.
+
+**Right answer:** read `docs/10-MECHANICAL-ENFORCEMENT.md` for the per-pattern translation. Don't try to build Claude Code-style hook scripts and wire them into Copilot — there's no event to wire them to. The right place for "after every edit, run X" is the IDE config or a Husky/lint-staged pre-commit hook, not the Copilot framework.
+
+This pitfall most often hits teams who adopted the Claude Orchestration Framework first and are now adopting the Copilot one alongside it for engineers who prefer Copilot. The two frameworks share the documentation discipline (rules, agents, handoff schema) but diverge on enforcement layer.
