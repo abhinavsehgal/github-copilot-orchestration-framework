@@ -56,6 +56,7 @@ github-copilot-orchestration-framework/
 │
 ├── docs/                                 ← framework documentation
 │   ├── 00-QUICKSTART.md                  ← START HERE: step-by-step onboarding for any project, incl. many repos (VS Code + CLI)
+│   ├── 00-QUICKSTART.html                ← the same guide as one offline page with tabs for all three editions (open in a browser)
 │   ├── 01-PRINCIPLES.md                  ← seven core principles
 │   ├── 02-ARCHITECTURE.md                ← .github/ layout (instructions / agents / skills / hooks / prompts; chat modes retired)
 │   ├── 03-AGENTS-GUIDE.md                ← how to design orchestrator + specialists for Copilot
