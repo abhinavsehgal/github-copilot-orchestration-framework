@@ -6,6 +6,9 @@ GitHub Copilot has more invocation modes than typical AI tools because it spans 
 
 ### Mode 1: Inline completions (autocomplete)
 
+> **Not re-verified on 2026-08-22.** Whether inline completions consult `.github/instructions/*.instructions.md` (as opposed to only `.github/copilot-instructions.md`) was not part of the v1.2/v1.1 verification pass and the two editions of this framework historically disagreed. Treat the bullet below as `documented-unverified` (Chapter 11/12) until you confirm it against the current Copilot docs for your IDE.
+
+
 How: ghost text in the editor as you type.
 
 **Loads:**
