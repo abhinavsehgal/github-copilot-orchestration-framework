@@ -38,9 +38,9 @@ For EACH file you plan to create, check if the destination path already exists:
 ```bash
 # For each proposed agent
 for agent in <project-slug>-orchestrator <specialist-1> <specialist-2> <...>; do
-  if [ -f ".github/agents/$agent.md" ]; then
-    echo "COLLISION: .github/agents/$agent.md already exists"
-  fi
+  for f in ".github/agents/$agent.agent.md" ".github/agents/$agent.md" ".github/chatmodes/$agent.chatmode.md"; do
+    [ -f "$f" ] && echo "COLLISION: $f already exists"
+  done
 done
 
 # For each proposed instruction file
@@ -129,12 +129,13 @@ If pre-flight 1-5 raised zero issues (truly greenfield Copilot setup), proceed t
 ```
 .github/agents/
 .github/instructions/
+.github/skills/
 .github/prompts/
 docs/ai-context/
 docs/_archive/
 ```
 
-(`.github/chatmodes/` is OPTIONAL — only create if the project specifically needs the older chat-mode format alongside agents.)
+(Do NOT create `.github/chatmodes/` — chat modes are retired. If pre-flight 5 found existing `.chatmode.md` files, propose renaming them to `.github/agents/<name>.agent.md` as a separate, user-approved step. `.github/hooks/` is optional and comes later — see `docs/10-MECHANICAL-ENFORCEMENT.md`.)
 
 ### Step 2 — Create `docs/ai-context/HANDOFF_SCHEMA.md`
 
@@ -154,7 +155,7 @@ Use `templates/INDEX.md.template`. Populate the routing table from inventory sec
 
 ### Step 5 — Create the orchestrator agent
 
-`.github/agents/<project-slug>-orchestrator.md` — use `templates/orchestrator-agent.md.template`. Substitute:
+`.github/agents/<project-slug>-orchestrator.agent.md` — use `templates/orchestrator-agent.md.template`. Substitute:
 - `<PROJECT_NAME>` — project's identity
 - `<PROJECT_SLUG>` — slug
 - `<PROTECTED_BRANCH>` — confirmed protected branch name from inventory
@@ -166,6 +167,8 @@ tools: ['codebase', 'search', 'usages', 'problems', 'changes', 'fetch']
 ```
 
 ⚠ Verify the exact tool names supported by the user's IDE/Copilot version. The list above is a common default; some IDEs may use different identifiers. If unsure, ASK the user (`<NEEDS USER CONFIRMATION: My proposed tools array uses [codebase, search, usages, ...]. Are these the correct identifiers for your Copilot version?>`).
+
+Fill `agents:` with the exact specialist names from Step 6 (VS Code subagent allowlist; ignored by the cloud agent — never `*`).
 
 Show me the file before saving.
 
@@ -241,9 +244,11 @@ Use `templates/SPOONFEEDER.md.template`. Customize the invocation modes section 
    - MIDDLE: a per-section disposition list ("preserved", "updated for drift", "replaced by template router", "dropped — covered by template")
 5. Wait for explicit user approval ("yes, write the merged file") before writing. If the user pushes back on any section, revise and re-show the diff.
 
-⚠ **Keep this file UNDER 200 lines** post-merge. Code review reads only the first 4,000 characters; inline completions are latency-sensitive. The file should be a tight router.
+⚠ **Keep this file UNDER 200 lines** post-merge. The docs say repository instructions must be no longer than about 2 pages; inline completions are latency-sensitive. The file should be a tight router.
 
-⚠ **Front-load the most important rules** in the first 1,500 characters so code review sees them.
+⚠ **Front-load the most important rules** so code review and inline completions see them first (good practice — the old "first 4,000 characters" figure is no longer on the docs).
+
+The template's golden rules 9–12 (corrections → instruction files, deferred work written to a backlog, production push freshens the docs, one name per concept) and the workflow step "read `docs/ai-context/PROJECT.md` §3 + skim `LEARNINGS.md` §D" are the v1.2.0 additions — keep them in the merged file; they point at the files Step 13 creates.
 
 If the merged file would exceed 200 lines: propose moving sections to `.github/instructions/<NAME>.instructions.md` (path-globbed) or `docs/ai-context/<area>.md` (orientation map) instead of bloating the router. Get user approval per moved section.
 
@@ -272,10 +277,22 @@ coverage/
 
 Adjust based on the project's actual tech stack. The `.github-pre-bootstrap-backup/` line is critical — that directory contains the original Copilot config from BEFORE the bootstrap and should NEVER be committed (it would create a confusing parallel set of files in the repo).
 
+### Step 13 — Create the project-truth set (v1.2.0)
+
+These files are what a FRESH agent with no transcript reads first (`docs/11-PROJECT-TRUTH-AND-LEARNINGS.md`). Generate them from the codebase with the same evidence discipline as the instruction files — every state claim date-stamped, every command copied from the real build config, never guessed:
+
+- `docs/ai-context/PROJECT.md` from `<framework path>/templates/PROJECT.md.template`. Fill §2 (environments + **what the deploy pipeline does NOT do**), §3 (what is live where — if you cannot verify an environment, write `unknown`, never a guess), §6 (sources of truth: the canonical helper per concept, found by grep), §7 (commands, verified against the build config file).
+- `docs/ai-context/LEARNINGS.md` from `<framework path>/templates/LEARNINGS.md.template`. On a brownfield repo, seed §A/§B from the git log and any existing post-mortems or ADRs; seed §D with the generic corrections already in the template; leave §E for the owner to fill.
+- `docs/ai-context/GLOSSARY.md` from `<framework path>/templates/GLOSSARY.md.template` — list every domain concept you found called by more than one name, with the file:field evidence.
+- `.github/skills/<project-slug>-engineering/SKILL.md` from `<framework path>/templates/engineering-playbook-skill.md.template` — an Agent Skill (frontmatter `name` + `description`), so it loads on the cloud agent and the CLI as well as in the IDE. The directory name must equal the `name:` field.
+- One `docs/<AREA>_BACKLOG.md` from `<framework path>/templates/BACKLOG.md.template` for the largest area, seeded with any TODO/FIXME clusters you found (each with what / why / effort / revisit-when).
+
+Show me each file before saving.
+
 ## Constraints
 
 - **Do not commit anything.** Show me each file. I'll commit at the end.
-- **Do not modify existing application code.** Only create/update files in `.github/`, `docs/ai-context/`, `docs/_archive/`, and `.gitignore`.
+- **Do not modify existing application code.** Only create/update files in `.github/`, `docs/ai-context/`, `docs/_archive/`, `docs/<AREA>_BACKLOG.md`, and `.gitignore`.
 - **Pre-flight checks are mandatory** (see top of prompt). Do not skip even on apparent greenfield. If pre-flight raises ANY `<NEEDS USER CONFIRMATION>` flag, STOP and present all flags before any file write.
 - **Snapshot first, write second.** Pre-flight 1 creates `.github-pre-bootstrap-backup/` — that backup is your safety net. If you have NOT created the backup, do not proceed to Step 1.
 - **Never silently overwrite.** Any pre-existing file at a destination path you'd write requires explicit user approval (per pre-flight 2). "Merge" is not the default — ASK whether to overwrite, skip, or merge.
@@ -292,11 +309,12 @@ Run these commands and report results:
 # 1. Files in expected locations
 ls .github/agents/
 ls .github/instructions/
+ls .github/skills/
 ls .github/prompts/
 ls docs/ai-context/
 
 # 2. Doc-link sweep — find broken refs
-grep -rohE "(docs|\.github)/[A-Za-z0-9_./-]+\.md" .github/copilot-instructions.md docs/ai-context/ .github/agents/ .github/instructions/ .github/prompts/ 2>/dev/null | sort -u | while read p; do [ -f "$p" ] || echo "BROKEN: $p"; done
+grep -rohE "(docs|\.github)/[A-Za-z0-9_./-]+\.md" .github/copilot-instructions.md docs/ai-context/ .github/agents/ .github/instructions/ .github/skills/ .github/prompts/ 2>/dev/null | sort -u | while read p; do [ -f "$p" ] || echo "BROKEN: $p"; done
 
 # 3. If existing copilot-instructions.md was merged: diff against backup
 diff .github-pre-bootstrap-backup/copilot-instructions.md .github/copilot-instructions.md | head -100
@@ -313,7 +331,7 @@ done
 Then ask the user to:
 6. **Reload their IDE** so Copilot picks up the new `.github/` files.
 7. Open Copilot Chat → click the agent dropdown → confirm specialists appear.
-8. Type `/` in Chat → confirm prompt files appear in the picker.
+8. Type `/` in Chat → confirm prompt files AND the `<project-slug>-engineering` skill appear in the picker.
 9. Spot-check a previously-working flow to confirm no regression (e.g. existing slash command still works, existing instruction file still loads on its `applyTo:` paths).
 
 Report:

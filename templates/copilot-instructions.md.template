@@ -16,20 +16,24 @@
 6. Don't read every doc. Use the routing map below.
 7. **Before editing any file, the relevant `.github/instructions/*.instructions.md` will auto-load if the file path matches its `applyTo:` glob. Verify the rule loaded; if not, read it manually.**
 8. **Multi-agent handoffs use a structured schema** — see `docs/ai-context/HANDOFF_SCHEMA.md`. The `@<PROJECT_SLUG>-orchestrator` agent emits outbound `handoff:` YAML; specialists return `return:` YAML. **No evidence, no claim.**
+9. **Corrections harden into instruction files.** If the owner corrected a *recurring* pattern this turn, end the turn by drafting a one-line patch to the right `.github/instructions/<domain>.instructions.md` and ask for approval. Never say "I'll remember" — any memory the IDE or CLI keeps is machine-local and invisible to every other agent and teammate.
+10. **Deferred work must be written, not spoken.** Any "later" / follow-up / known gap named in a summary is appended to `docs/<AREA>_BACKLOG.md` (what / why / effort / revisit-when) before the turn ends.
+11. **Every production push freshens the docs — same turn, no exceptions.** `<CHANGELOG_PATH>` (the anchor), the affected orientation map(s), the affected instruction files, and `docs/ai-context/PROJECT.md` §3 if the production state changed. (Enforced by the `agentStop` doc-freshness hook if `.github/hooks/` is installed — see `docs/ai-context/HOOKS.md`.)
+12. **One name per concept.** `docs/ai-context/GLOSSARY.md` is a rule file; adding a new name for an existing concept is a defect.
 
 ## Mandatory workflow (every non-trivial task)
 
 1. Restate the task.
 2. Identify affected roles (<LIST_OF_ROLES>).
-3. Read `docs/ai-context/INDEX.md`.
+3. Read `docs/ai-context/PROJECT.md` (current truth — especially §3, what is live where) and `docs/ai-context/INDEX.md`. Skim `docs/ai-context/LEARNINGS.md` §D (agent corrections) before the first edit.
 4. Read only the minimum docs flagged for this task (50–150 lines each).
 5. Verify that path-matching `.github/instructions/*.instructions.md` auto-loaded.
 6. For medium/complex tasks, invoke `@<PROJECT_SLUG>-orchestrator` in Copilot Chat. For narrow domain work, invoke the relevant `@<specialist>` directly.
 6.5. **Handoff format.** Orchestrator → specialist delegations MUST use the outbound `handoff:` YAML block from `docs/ai-context/HANDOFF_SCHEMA.md`. Specialists MUST validate it (refuse if missing/vague) and return the inbound `return:` block.
 7. Inspect code before proposing changes.
 8. Smallest safe change.
-9. Run relevant checks (<TEST_COMMAND>, build, etc.).
-10. **Definition of done:** report changed files, tests, risks, follow-ups, AND the list of `.github/instructions/*.instructions.md` files that applied to your edits.
+9. Run relevant checks (<TEST_COMMAND>, build, etc.). Verification follows the proof ladder in `.github/skills/<PROJECT_SLUG>-engineering/SKILL.md` (a green build is evidence, not proof).
+10. **Definition of done:** report changed files, checks run with results, risks, follow-ups (written to a backlog), AND the list of `.github/instructions/*.instructions.md` files that applied to your edits.
 
 ---
 
@@ -47,7 +51,9 @@
 | Tests / E2E | `docs/ai-context/testing-strategy.md` |
 | Build / deploy / cron | `docs/ai-context/release-deployment.md` |
 | Cross-role behavior / acceptance criteria | `docs/ai-context/roles-and-permissions.md` |
-| Repo orientation / what is the product? | `docs/ai-context/product-overview.md` |
+| Repo orientation / what is live where | `docs/ai-context/PROJECT.md` |
+| Past decisions / failed approaches / bug patterns / corrections | `docs/ai-context/LEARNINGS.md` |
+| Vocabulary | `docs/ai-context/GLOSSARY.md` |
 
 ## Agent routing — pick by task class
 
@@ -63,17 +69,22 @@
 | Build / deploy / cron / env | `@release-devops` |
 | Docs / instructions / agents cleanup | `@context-librarian` |
 
-## Prompt files (slash commands)
+## Skills and prompt files (repeatable workflows)
 
+- `.github/skills/<PROJECT_SLUG>-engineering/SKILL.md` — the six-gate playbook (`/<PROJECT_SLUG>-engineering`; start here when no more specific workflow fits). Skills work on the cloud agent, CLI and IDEs alike.
 - `/investigate-bug` — bug investigation flow
 - `/build-feature` — feature build flow
 - `/qa-flow` — QA pass
 - `/compliance-review` — compliance review (flagger only, never approver)
 - `/context-refactor` — keep `.github/` and `docs/` tidy
+- `/commit-push-pr` — validate → commit → push → PR against `<DEFAULT_DEV_BRANCH>`
+
+(Prompt files under `.github/prompts/` are IDE-only; a workflow the cloud agent or CLI must run lives under `.github/skills/`.)
 
 ## Reference docs (canonical — don't duplicate; link to them)
 
-- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md`
+- Current truth: `docs/ai-context/PROJECT.md` · Learnings: `docs/ai-context/LEARNINGS.md` · Backlogs: `docs/<AREA>_BACKLOG.md`
+- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md` · What is enforced mechanically: `docs/ai-context/HOOKS.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - API reference: `docs/API.md`
 - Tech stack: `docs/TECH_STACK.md`

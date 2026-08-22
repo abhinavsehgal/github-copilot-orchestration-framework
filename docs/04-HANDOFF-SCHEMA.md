@@ -298,6 +298,37 @@ handoff:
     previous_findings_summary: n/a
 ```
 
+## Optional fields added in v1.2.0 (additive — `schema_version` stays 1)
+
+**Outbound**, for multi-repo workspaces (Chapter 12) — omit in single-repo projects:
+
+```yaml
+  repo: <repo name from workspace.json — the ONLY repo this handoff may edit>
+  contract_impact:
+    level: <none | additive | breaking>
+    contracts: [<names from CONTRACTS.md>]
+    consumers_to_update: [<repo names — required when level != none>]
+```
+
+**Outbound**, any project — the evidence-confidence class from Chapter 11 may be used in place of the
+three-value `confidence:` on a claim (`verified-code` / `verified-schema` / `verified-test` /
+`verified-git` / `documented-unverified` / `historical` / `unknown`). Specialists treat anything
+that is not `verified-*` exactly as they treat `confidence: low`.
+
+**Inbound**, for multi-repo workspaces:
+
+```yaml
+  contracts_changed:
+    - contract: <name>
+      change: <one line>
+      backward_compatible: <true | false>
+      consumers_grepped: [<repo>:<path>, …]
+```
+
+**Inbound**, any project — `deferred_work:` lists anything the specialist is *not* doing that
+someone must (each item with the backlog file it was appended to). A return that names deferred work
+without a backlog path is incomplete (Chapter 11).
+
 ## Versioning
 
 - `schema_version: 1` is current.

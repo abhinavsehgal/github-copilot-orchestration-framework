@@ -1,12 +1,15 @@
 ---
-description: After the user issues a correction, decide whether the lesson should harden into a `.github/instructions/<file>.instructions.md` patch — and if so, draft it. Codifies the "memory is not a substitute for a rule" discipline.
+# File: .github/skills/correction-capture/SKILL.md — an AGENT SKILL (cross-surface). With the v1.2 hooks installed
+# (docs/10 Pattern 2) this runs automatically at agentStop; keep the skill for surfaces without hooks and for manual use.
+name: correction-capture
+description: After the user corrects the assistant, decide whether the lesson is a RECURRING domain pattern and, if so, draft a one-line patch to the right .github/instructions/<file>.instructions.md for approval. Use immediately after any correction. Never "I'll remember".
 ---
 
 # /correction-capture
 
 > **Invocation.** In Copilot Chat (any surface), type `/correction-capture` immediately after the user issues a correction. Replaces the "I'll remember next time" reflex with a concrete instruction-file patch the user can approve or reject.
 >
-> **Why this exists.** Corrections that live only in conversation are re-issued next session. As of v1.2 Copilot has hooks (`docs/10-MECHANICAL-ENFORCEMENT.md` Pattern 2 auto-triggers this at `agentStop`), and the cross-surface successor of this prompt file is the skill at `templates/skills/correction-capture/`. Keep this IDE-only prompt for surfaces where hooks are not installed, and encode the invocation step into your orchestrator's incoming-feedback instructions.
+> **Why this exists.** Corrections that live only in conversation are re-issued next session. As of v1.2 the `userPromptSubmitted` + `agentStop` hooks (docs/10 Pattern 2) trigger this discipline automatically; this skill is the manual / hook-less path and the wording the hook's block reason points at.
 
 ## When to invoke
 

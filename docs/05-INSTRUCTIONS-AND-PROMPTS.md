@@ -1,6 +1,8 @@
-# 05 — Instructions and Prompts
+# 05 — Instructions, Skills and Prompts
 
-Two patterns for capturing knowledge that doesn't belong in agents: **instruction files** (path-globbed invariants) and **prompt files** (repeatable workflows invoked via slash command).
+Three patterns for capturing knowledge that doesn't belong in agents: **instruction files** (path-globbed invariants), **agent skills** (repeatable workflows that work on every Copilot surface), and **prompt files** (IDE-only repeatable prompts invoked via slash command).
+
+> v1.0/v1.1 of this chapter described prompt files as "the Copilot equivalent of skills". That was wrong: Agent Skills are a documented, cross-surface primitive and are the equivalent of Claude Code skills; prompt files are an IDE convenience. Corrected in v1.2.0 (verified 2026-08-22).
 
 ## Instruction files
 
@@ -79,9 +81,11 @@ applyTo: "app/models/*.rb"
 
 Globs are matched against the relative path from project root.
 
-### Limit on code review
+### Size budget (and code review)
 
-⚠ **Code review reads only the first 4,000 characters of each instruction file.** If you need code-review-relevant rules, put them at the top of the file.
+The current docs give two limits (verified 2026-08-22): the code-review tutorial says to **limit any single instruction file to about 1,000 lines**, and the repository-instructions page says **instructions must be no longer than 2 pages**. The earlier "code review reads only the first 4,000 characters" sentence is no longer on the docs and is not a cap you should design around (Pitfall 2).
+
+Still front-load the rules that matter most for code review — the reader under the tightest budget sees the top of the file first — but treat that as good practice, not a hard limit. When a file grows toward the 2-page mark, split it by domain.
 
 To exclude an instruction from code review entirely:
 ```yaml
@@ -157,21 +161,96 @@ applyTo: "src/screens/**/*.tsx,src/components/**/*.tsx"
 
 ❌ **Files with no `applyTo`.** Without the glob, Copilot has no signal to load it.
 
-❌ **Putting too many rules in one file.** Group by domain, not by "all rules in one file." If a file passes ~150 lines or 3,000 chars, split it.
+❌ **Putting too many rules in one file.** Group by domain, not by "all rules in one file." If a file passes ~150 lines, split it — well inside the documented ~2-page budget.
 
-## Prompt files
+## Agent skills
 
-Repeatable workflows invoked via slash command. Each file in `.github/prompts/` has frontmatter + body.
+Repeatable multi-step workflows that load on **every** Copilot surface. This is the Copilot equivalent of Claude Code skills, and the home for anything the cloud agent or the CLI must be able to run.
 
-### When to write a prompt file
+### Location
+
+- Project: `.github/skills/<skill-name>/SKILL.md` (one directory per skill). Copilot also discovers `.claude/skills/` and `.agents/skills/`.
+- Personal: `~/.copilot/skills/`.
+
+### Frontmatter
+
+| Field | Required | Notes |
+|---|---|---|
+| `name` | yes | Lowercase with hyphens; matches the directory name. |
+| `description` | yes | One sentence — when to use this skill. Drives automatic loading by relevance. |
+| `license` | no | |
+| `allowed-tools` | no | Tools the skill may use. |
+| `argument-hint` | no | VS Code only. |
+| `user-invocable` | no | VS Code only — whether `/skill-name` is offered to the user. |
+| `disable-model-invocation` | no | VS Code only — prevents automatic loading. |
+
+### Invocation
+
+Type `/<skill-name>` in chat, or let Copilot load the skill automatically when the task matches its `description`.
+
+### Surfaces
+
+Supported by the cloud agent, code review, the Copilot CLI, the Copilot app, and agent mode in VS Code and JetBrains. **Prompt files are IDE-only** — VS Code's own guidance for a prompt that agents on the Agent Host don't pick up is "convert it to an agent skill". If a workflow must run from an issue assignment or from `copilot -p` in CI, it is a skill.
+
+### Skill structure
+
+```markdown
+---
+name: <skill-name>
+description: <one sentence — when to use this>
+---
+
+# <Skill title>
+
+<one paragraph — what this procedure guarantees>
+
+## Steps
+
+### 1. <Step name>
+<2-4 sentences>
+
+### 2. <Next step>
+...
+
+## Definition of Done
+
+1. <Artifact>
+2. <Verification>
+```
+
+### When to write a skill
 
 Write one when:
 - The same kind of task arrives 3+ times
 - The task has multiple steps with verification between them
 - The cost of skipping a step is high (e.g. forgot to run security review before launching a new auth flow)
-- A junior team member would benefit from a guided checklist
+- The workflow must also run on the cloud agent or the CLI, not only in an IDE chat
 
 Don't write one for:
+- One-off tasks
+- Tasks where the steps vary too much per instance
+- Things that are really just a single agent invocation
+
+### Common skills (most projects benefit from these)
+
+- `.github/skills/<project-slug>-engineering/SKILL.md` — the six-gate playbook with the evidence ladder (`templates/engineering-playbook-skill.md.template`, Chapter 11). Invoke when no more specific skill fits.
+- `.github/skills/investigate-bug/SKILL.md`, `.github/skills/build-feature/SKILL.md`, `.github/skills/qa-flow/SKILL.md`, `.github/skills/compliance-review/SKILL.md`, `.github/skills/context-refactor/SKILL.md` — the same five workflows listed under prompt files below, as skills so they also run on the cloud agent and CLI.
+
+## Prompt files
+
+IDE-only repeatable prompts invoked via slash command. Each file in `.github/prompts/` has frontmatter + body. They are a convenience for workflows you only ever start by hand in VS Code / Visual Studio / JetBrains; the cloud agent and the Copilot CLI do not load them.
+
+### When to write a prompt file (rather than a skill)
+
+Write one when:
+- The workflow is only ever started by a person in the IDE, and needs `${input:…}` prompting
+- You want a quick checklist without the directory-per-skill structure
+
+Prefer a skill when:
+- The workflow must run on the cloud agent or the CLI
+- The workflow should load automatically when relevant, not only on `/name`
+
+Don't write either for:
 - One-off tasks
 - Tasks where the steps vary too much per instance
 - Things that are really just a single agent invocation
@@ -251,18 +330,20 @@ Steps: identify data involved → identify if regulated subjects involved → re
 
 For maintaining the framework itself: read current INDEX → categorize suspect content → move to correct home → consolidate duplicates → flag conflicts → keep `.github/copilot-instructions.md` small.
 
-## Instructions vs prompt files vs agents — when to use which
+## Instructions vs skills vs prompt files vs agents — when to use which
 
 | If the knowledge is... | Put it in... |
 |---|---|
 | A path-scoped invariant ("don't do X when editing Y") | Instruction file |
-| A multi-step workflow that recurs (invoked manually) | Prompt file |
+| A multi-step workflow that recurs, on any surface (cloud agent, CLI, IDE) | Agent skill |
+| A multi-step prompt only ever started by hand in the IDE, with `${input:…}` | Prompt file |
 | A persona with its own scope and Definition of Done | Custom agent |
 | A one-time decision rationale | PR description |
 | Long-form architecture explanation | Canonical doc |
 | Quick orientation for an area | Orientation map (`docs/ai-context/<area>.md`) |
+| What is true right now / what we learned / what we deferred | `PROJECT.md` / `LEARNINGS.md` / `docs/<AREA>_BACKLOG.md` (Chapter 11) |
 
-When something feels like it could be 2 of those: prefer instruction file > prompt file > agent (in that order). Instruction files are most precise (path-globbed, auto-loaded). Prompt files are next (named workflow, manual). Agents are heaviest (full persona).
+When something feels like it could be 2 of those: prefer instruction file > skill > prompt file > agent (in that order). Instruction files are most precise (path-globbed, auto-loaded). Skills are next (named workflow, every surface, auto-loadable). Prompt files are IDE-only. Agents are heaviest (full persona).
 
 ## Naming and lifecycle
 
@@ -273,7 +354,13 @@ When something feels like it could be 2 of those: prefer instruction file > prom
 - New gotcha from existing domain: append to existing file
 - Stale instruction (the underlying constraint was fixed): delete it, don't leave it
 
+### Skills
+- Lowercase with hyphens; directory name = `name:` = slash command (`.github/skills/investigate-bug/SKILL.md` → `/investigate-bug`)
+- Keep `description` precise — it is what drives automatic loading; a vague one loads the skill on unrelated tasks
+- Used < 3x per quarter and never auto-loaded: consider deleting; the workflow probably wasn't recurrent enough
+
 ### Prompt files
 - Lowercase with hyphens, `.prompt.md` suffix
 - Filename becomes the slash command (`investigate-bug.prompt.md` → `/investigate-bug`)
+- A skill and a prompt file with the same name are confusing — keep one
 - Used < 3x per quarter: consider deleting; the workflow probably wasn't recurrent enough

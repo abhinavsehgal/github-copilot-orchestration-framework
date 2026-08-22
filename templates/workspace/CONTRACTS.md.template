@@ -1,0 +1,13 @@
+# <WORKSPACE_NAME> — Contracts (verified <YYYY-MM-DD>)
+
+> Every boundary a change can cross. One entry per contract. `contract-guardian` reads this before
+> any `contract_impact != none` handoff is issued.
+
+## `<CONTRACT_NAME>`
+
+- **Kind:** <rest | graphql | grpc | event | shared-schema>
+- **Producer:** `<REPO_1_NAME>` — spec at `<REPO_1_PATH>/<spec path>`
+- **Consumers:** `<REPO_2_NAME>` (pins shape at `<path>`), `<REPO_3_NAME>` (pins shape at `<path>`)
+- **Versioning rule:** <additive-only; breaking = new major path / new event version; deprecate-after-N-days>
+- **Panel → source pairings** (same heading ⇒ same endpoint): `<consumer screen>` ← `GET <path>`
+- **Known debt:** <fields duplicated client-side; consumers that compute what the producer should>

@@ -1,12 +1,12 @@
 # GitHub Copilot Orchestration Framework
 
-> **Version 1.1.2** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack agnostic
+> **Version 1.2.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
 >
-> v1.1.2 is a sync-point release matching [`claude-orchestration-framework v1.1.2`](https://github.com/abhinavsehgal/claude-orchestration-framework/releases/tag/v1.1.2). No behavioral changes in the Copilot framework — Copilot doesn't have programmable hooks. See [CHANGELOG.md](CHANGELOG.md#112--2026-05-06).
+> **v1.2.0 (2026-08-22) — three months of production use, folded back in, and three platform claims retracted.** New chapters: **11 — Project truth, learnings and the evidence ladder** and **12 — Multi-repo workspaces** (web + mobile + microservices across repos, with the `.code-workspace` + manifest + delegation pattern). Nine new pitfalls. **Retracted, because the platform moved:** Copilot *does* have lifecycle hooks now (`.github/hooks/*.json` — chapter 10 is rewritten around them, with five working templates); custom agents *can* invoke custom agents (VS Code `agents:` is an allowlist); and **agent skills** (`.github/skills/`) — not prompt files — are the cross-surface equivalent of Claude Code skills. Every platform claim in v1.2.0 carries a verified-on date.
 >
 > **Purpose.** A reusable multi-agent orchestration setup for [GitHub Copilot](https://docs.github.com/en/copilot) that prevents cascading hallucinations, enforces evidence-based handoffs between Copilot custom agents, and makes Copilot usable on production codebases by teams. Tech-stack agnostic — drops into any project (web, mobile, backend, ML, infra) in 2-4 hours.
 
-This framework uses GitHub Copilot's **own** customization surface — `.github/copilot-instructions.md`, `.github/instructions/`, `.github/prompts/`, `.github/agents/`, `.github/chatmodes/` — and adds documentation conventions on top. No external tools, no extensions, no Marketplace dependencies.
+This framework uses GitHub Copilot's **own** customization surface — `.github/copilot-instructions.md` (or `AGENTS.md`), `.github/instructions/`, `.github/agents/*.agent.md`, `.github/skills/`, `.github/hooks/`, and the IDE-only `.github/prompts/` — and adds documentation conventions on top. No external tools, no extensions, no Marketplace dependencies.
 
 ---
 
@@ -38,11 +38,13 @@ This framework gives you all of that using Copilot's documented features. No run
 |---|---|---|---|
 | **Repository-wide instructions** | `.github/copilot-instructions.md` | Every repository request | Project-wide router (golden rules + workflow + agent map) |
 | **Path-specific instructions** | `.github/instructions/<NAME>.instructions.md` (with `applyTo:` glob) | Editing files matching the glob | Domain-scoped invariants ("rules") |
-| **Prompt files** | `.github/prompts/<NAME>.prompt.md` | Manually invoked via `/<name>` in Chat | Repeatable workflows ("skills") |
-| **Custom agents** | `.github/agents/<NAME>.md` | Selected manually OR auto-routed | Orchestrator + specialists |
-| **Custom chat modes** | `.github/chatmodes/<NAME>.chatmode.md` | Selected from Chat dropdown | Personas (optional, secondary to agents) |
+| **Agent skills** (v1.2) | `.github/skills/<name>/SKILL.md` | `/<name>` or auto-loaded by relevance — cloud agent, CLI, code review, VS Code, JetBrains | Repeatable workflows — the cross-surface equivalent of Claude Code skills |
+| **Prompt files** | `.github/prompts/<NAME>.prompt.md` | `/<name>` in IDE Chat only | IDE-only convenience prompts (not the cloud agent, not the CLI) |
+| **Custom agents** | `.github/agents/<NAME>.agent.md` | Selected manually, `@`-mentioned, or invoked as a subagent (VS Code `agents:` allowlist) | Orchestrator + specialists |
+| **Hooks** (v1.2) | `.github/hooks/*.json` | Lifecycle events (`preToolUse`, `postToolUse`, `agentStop`, …) — cloud agent, CLI, VS Code | Mechanical enforcement (chapter 10) |
+| ~~Custom chat modes~~ | `.github/chatmodes/*.chatmode.md` | Retired — rename to `.agent.md` | — |
 
-All five mechanisms are documented Copilot features. See `docs/02-ARCHITECTURE.md` for which to use when.
+All of these are documented Copilot features (verified 2026-08-22). See `docs/02-ARCHITECTURE.md` for which to use when.
 
 ## What's in the box
 
@@ -54,15 +56,17 @@ github-copilot-orchestration-framework/
 │
 ├── docs/                                 ← framework documentation (10 chapters)
 │   ├── 01-PRINCIPLES.md                  ← seven core principles
-│   ├── 02-ARCHITECTURE.md                ← .github/ layout (instructions / prompts / agents / chatmodes)
+│   ├── 02-ARCHITECTURE.md                ← .github/ layout (instructions / agents / skills / hooks / prompts; chat modes retired)
 │   ├── 03-AGENTS-GUIDE.md                ← how to design orchestrator + specialists for Copilot
 │   ├── 04-HANDOFF-SCHEMA.md              ← bidirectional schema + worked examples
 │   ├── 05-INSTRUCTIONS-AND-PROMPTS.md    ← path-globbed instructions + prompt files
 │   ├── 06-INVOCATION-MODES.md            ← Chat vs Edit vs Cloud Agent vs CLI
 │   ├── 07-FOLDER-STRUCTURE.md            ← three-tier doc organization
-│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (19 in v1.1)
+│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (28 as of v1.2)
 │   ├── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
-│   └── 10-MECHANICAL-ENFORCEMENT.md      ← (v1.1) translating Claude Code hook patterns onto Copilot's `applyTo:` + prompt-file surface
+│   ├── 10-MECHANICAL-ENFORCEMENT.md      ← (rewritten v1.2) Copilot hooks: the contract, five patterns, eleven design rules
+│   ├── 11-PROJECT-TRUTH-AND-LEARNINGS.md ← (v1.2) PROJECT.md / LEARNINGS.md / backlogs, the evidence ladder, the six-gate playbook
+│   └── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
 │
 ├── prompts/                              ← ready-to-paste Chat prompts for bootstrapping
 │   ├── INVENTORY-PROMPT.md
@@ -79,10 +83,15 @@ github-copilot-orchestration-framework/
     ├── copilot-instructions.md.template     ← .github/copilot-instructions.md (root router)
     ├── instructions.md.template             ← .github/instructions/<name>.instructions.md
     ├── prompt.md.template                   ← .github/prompts/<name>.prompt.md
-    ├── chatmode.md.template                 ← .github/chatmodes/<name>.chatmode.md
+    ├── chatmode.md.template                 ← RETIRED format — kept only to migrate legacy .chatmode.md files to .agent.md
     ├── archive-README.md.template
-    ├── correction-capture.prompt.md.template  ← (v1.1) /correction-capture — manual workflow that hardens user corrections into instruction-file patches
-    └── commit-push-pr.prompt.md.template      ← (v1.1) /commit-push-pr — daily commit→PR workflow with the project's golden rules baked in
+    ├── correction-capture.prompt.md.template  ← (v1.1) IDE-only prompt-file form — superseded by the skill below
+    ├── commit-push-pr.prompt.md.template      ← (v1.1) IDE-only prompt-file form — superseded by the skill below
+    ├── PROJECT.md.template · LEARNINGS.md.template · BACKLOG.md.template · GLOSSARY.md.template   ← (v1.2) the project-truth set
+    ├── engineering-playbook-skill.md.template ← (v1.2) six gates + evidence ladder, as .github/skills/<slug>-engineering/SKILL.md
+    ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build
+    ├── hooks/                                 ← (v1.2) hooks.json + hook-io / correction-detect / doc-freshness-track / lint-fix / stop-gate
+    └── workspace/                             ← (v1.2) the multi-repo layer: .code-workspace, manifest, router, orchestrator + 2 specialists, contract instructions, delegate skill + scripts
 ```
 
 ---
@@ -188,7 +197,7 @@ Estimated time: **2-4 hours** (split across phases — see `docs/09-RUNBOOK.md`)
 
 ### Scenario C — Just want to read the framework
 
-Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`). Or browse the markdown files in `docs/` for clickable cross-links.
+Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — self-contained **as of v1.1.2**; it predates the v1.2 hooks rewrite and chapters 11–12 (regenerate is tracked in the changelog). Or browse the markdown files in `docs/` for clickable cross-links.
 
 The most actionable single chapter is **`docs/09-RUNBOOK.md`**.
 
@@ -205,8 +214,8 @@ Note: prompt files and custom agents are currently in **public preview** in some
 
 ## What this framework does NOT include
 
-- **Runtime hooks.** Copilot doesn't expose pre-tool-use hooks the way some AI agents do. Documentation enforcement is the framework's primary discipline layer.
-- **`maxTurns` enforcement.** Copilot agents don't currently support a `maxTurns` field. The orchestrator's "soft hop limit" is documentation-only.
+- **Hooks in the default install.** Copilot *does* have lifecycle hooks as of v1.2 (`.github/hooks/*.json`), and five templates ship — but they are an explicit later-phase decision (chapter 10), not a setup-time default. Documentation discipline stays the primary layer.
+- **`maxTurns` enforcement.** No documented per-agent turn cap on Copilot (verified 2026-08-22). The orchestrator's "soft hop limit" is documentation-only.
 - **Code generation.** This is purely a documentation + agent-config framework. Your application code stays untouched.
 - **Vendor lock-in.** No external services, no SaaS, no API keys beyond your existing Copilot subscription.
 
@@ -227,7 +236,7 @@ See **`docs/03-AGENTS-GUIDE.md`** for how to pick your specialist list and **`do
 After bootstrapping, the framework needs minimal upkeep:
 
 - **Per task:** instruction files accumulate naturally as production teaches you new gotchas
-- **Per quarter:** run `prompts/REFINEMENT-PROMPT.md` to audit specialist scope drift, archive stale docs
+- **Per quarter:** run `prompts/REFINEMENT-PROMPT.md` to audit specialist scope drift, archive stale docs, re-check platform drift (Pitfall 20 — three v1.0/v1.1 claims were false within three months), and re-stamp `PROJECT.md`
 - **Per major refactor:** the `context-librarian` specialist (if you spawned one) handles docs reorganization
 
 ## How this differs from the Claude Code version
@@ -239,16 +248,19 @@ If you've seen the [Claude Code Orchestration Framework](https://github.com/abhi
 | Project router | `CLAUDE.md` | `.github/copilot-instructions.md` (or `AGENTS.md` for cross-AI) |
 | Specialists | `.claude/agents/<name>.md` | `.github/agents/<NAME>.md` |
 | Path-globbed rules | `.claude/rules/<name>.md` (with `applies_to:` in body) | `.github/instructions/<NAME>.instructions.md` (with `applyTo:` in frontmatter — direct equivalent, cleaner) |
-| Repeatable workflows | `.claude/skills/<name>/SKILL.md` | `.github/prompts/<NAME>.prompt.md` (invoked via `/<name>`) |
-| Personas (optional) | n/a | `.github/chatmodes/<NAME>.chatmode.md` |
-| Tool allowlists | `tools:` field | `tools:` field (same syntax) |
-| MCP scoping | `mcpServers:` field | `mcp-servers:` field (note hyphen, not camelCase) |
-| Cross-agent invocation | `Agent(name1, name2)` allowlist | `agent` tool alias + cross-references in body |
-| `maxTurns` | Supported | NOT supported (documentation discipline only) |
-| Subagent context isolation | Strong (separate context windows) | Varies by surface — see `docs/06-INVOCATION-MODES.md` |
-| Invocation modes | `claude` / `claude --agent <name>` | IDE Chat / Cloud Agent / CLI / Code Review (4+ surfaces) |
+| Repeatable workflows | `.claude/skills/<name>/SKILL.md` | `.github/skills/<name>/SKILL.md` (cross-surface); `.github/prompts/*.prompt.md` is IDE-only |
+| Personas (optional) | n/a | ~~chat modes~~ retired — use `.agent.md` |
+| Tool allowlists | `tools:` field | `tools:` field (same idea, Copilot tool names) |
+| MCP scoping | `mcpServers:` field | `mcp-servers:` field (note hyphen) |
+| Cross-agent invocation | `Agent(name1, name2)` allowlist; nesting to a configurable depth | VS Code `agents:` allowlist + `runSubagent` (nesting via `chat.subagents.allowInvocationsFromSubagents`); cloud agent `agent` tool alias, no allowlist |
+| Lifecycle hooks | `.claude/settings.json` (`PreToolUse` / `PostToolUse` / `Stop`; stderr + exit 2) | `.github/hooks/*.json` (`preToolUse` / `postToolUse` / `agentStop`; JSON on stdout; timeouts fail open). VS Code also reads `.claude/settings.json` |
+| Path-scoped rules | `.claude/rules/*.md` with `paths:` | `.github/instructions/*.instructions.md` with `applyTo:`. VS Code also reads `.claude/rules/` |
+| `maxTurns` | Supported | Not documented (discipline only) |
+| Headless / scripted | `claude -p … --agent … --output-format json` | `copilot -p … --agent=… --allow-tool=…` (no structured-output flag documented) |
+| Multi-repo | Workspace dir; child hooks do NOT load from a parent (chapter 12) | VS Code multi-root loads every folder's agents + hooks — name collisions instead (chapter 12) |
+| Invocation modes | `claude` / `claude --agent <name>` / `claude -p` | IDE Chat / Cloud Agent / CLI / Code Review (4+ surfaces) |
 
-Both frameworks share: the bidirectional handoff schema, the universal evidence rule, the failure_condition pattern, three-tier docs, and the principle of documentation-discipline-over-runtime-enforcement.
+Both frameworks share: the bidirectional handoff schema, the universal evidence rule, the failure_condition pattern, three-tier docs, the v1.2 project-truth set (`PROJECT.md` / `LEARNINGS.md` / backlogs / glossary), the evidence-confidence taxonomy, and the principle of documentation-discipline-over-runtime-enforcement. **Running both in one repo** is a supported setup: VS Code reads `.claude/rules`, `.claude/agents`, `.claude/skills` and `.claude/settings.json` hooks by default, so one corpus of rules/agents/skills can serve two thin routers (`CLAUDE.md` + `.github/copilot-instructions.md`). The two hook contracts differ — never share a hook script without an adapter.
 
 ## Frequently asked
 
@@ -259,13 +271,19 @@ No. Custom agents apply to Chat, Cloud Agent, and (depending on IDE) Edits. Inli
 Yes — the `.github/` files are shared across IDEs. Some features (like prompt files) work identically in VS Code, Visual Studio, JetBrains. The cloud agent on github.com uses the same files plus `target:` field scoping if needed.
 
 **Q: What's the difference between custom agents and custom chat modes?**
-Custom agents (`.github/agents/<NAME>.md`) are the newer format with full metadata (tools, mcp-servers, model, target, user-invocable). Custom chat modes (`.github/chatmodes/<NAME>.chatmode.md`) are the older format with similar but more limited fields. The framework recommends agents over chat modes for new projects — `.agent.md` is the more future-proof format.
+Chat modes are retired: custom agents *were* chat modes, and the docs now say to rename `.chatmode.md` files to `.agent.md`. Use `.github/agents/<NAME>.agent.md`.
+
+**Q: Prompt files or skills?**
+Skills (`.github/skills/<name>/SKILL.md`). They work on the cloud agent, the CLI, code review and every IDE; prompt files are IDE-only and the VS Code docs say to convert a prompt to a skill for the Agent Host. The framework's v1.1 prompt-file templates are kept for IDE use; the v1.2 skills supersede them.
 
 **Q: Will this conflict with my existing `.github/copilot-instructions.md`?**
-The framework will REPLACE your existing file. Back it up first if it has content you want to preserve. The new router includes a section for project-specific instructions you can keep.
+No — the BOOTSTRAP prompt runs pre-flight checks, snapshots the existing file, and shows a 3-pane diff before writing a merged router. Nothing is replaced without your per-file approval.
+
+**Q: We have one repo per microservice plus separate web and mobile repos. Agents at every level, or one top-level orchestrator?**
+Both, in layers — and not a separate framework. Every repo keeps its own install; shared specialists move to the organisation's `.github-private/agents/`; a workspace repo with a `.code-workspace` file, a manifest and gitignored clones holds *only* the cross-repo orchestrator, the service map and the contract rules, and delegates writes to each child's own orchestrator (its own CLI session, or a VS Code subagent). Design, verified platform behaviour, and a one-afternoon POC recipe: `docs/12-MULTI-REPO-WORKSPACES.md` + `templates/workspace/`.
 
 **Q: Can I share this with another engineer who isn't on my team?**
-This repo is private. Add them as a collaborator on GitHub, or clone the framework folder and share. The framework itself is MIT-licensed.
+This repo is public and MIT-licensed. Send the link.
 
 ## License
 
@@ -279,4 +297,6 @@ This framework's design is grounded in the official GitHub Copilot documentation
 - [Custom agents configuration](https://docs.github.com/en/copilot/reference/custom-agents-configuration)
 - [About custom agents (cloud agent)](https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-custom-agents)
 - [Prompt files tutorial](https://docs.github.com/en/copilot/tutorials/customization-library/prompt-files)
+- [About agent skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills) · [Hooks reference](https://docs.github.com/en/copilot/reference/hooks-reference) · [Copilot CLI programmatic reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-programmatic-reference)
+- [VS Code: custom agents](https://code.visualstudio.com/docs/copilot/customization/custom-agents) · [VS Code: subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [VS Code: hooks](https://code.visualstudio.com/docs/copilot/customization/hooks)
 - [Creating custom agents for Copilot cloud agent](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-custom-agents)

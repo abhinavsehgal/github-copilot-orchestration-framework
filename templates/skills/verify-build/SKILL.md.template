@@ -1,0 +1,16 @@
+---
+# File: .github/skills/verify-build/SKILL.md
+name: verify-build
+description: Run the project's build and report the real result before any "done" claim. Use when finishing a change to build-relevant files, when a return block lacks the build in tests_run, or when the orchestrator is in doubt. Never marks a task done on a failed or unrun build.
+---
+
+# /verify-build
+
+1. Determine whether build-relevant files changed: `git status --porcelain` filtered by
+   `<BUILD_RELEVANT_GLOB>`. If none, say so and stop — do not run the build.
+2. Run `<BUILD_COMMAND>` from `<BUILD_DIR>`. Capture the exit code and the last 40 lines.
+3. Exit 0 → report "build green: `<BUILD_COMMAND>` (exit 0)" and include that exact line in the
+   `tests_run` of any return block. Non-zero → report the tail, do NOT proceed to commit / PR /
+   "done", and state the smallest fix. A build killed by a timeout is **inconclusive**, not failed —
+   say so and re-run.
+4. Never claim a build you did not run; never hide a failed one.
