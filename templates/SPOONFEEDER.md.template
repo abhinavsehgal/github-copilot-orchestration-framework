@@ -16,9 +16,10 @@
    │             └── docs/*.md ──────────── canonical full-detail docs
    │
    ├── .github/instructions/*.instructions.md ── path-globbed (auto-load when editing matching files)
-   ├── .github/agents/*.md ─────────────── orchestrator + specialists
-   ├── .github/prompts/*.prompt.md ─────── slash-command workflows
-   └── .github/skills/<name>/SKILL.md ───── repeatable workflows (cross-surface; prompt files are IDE-only)
+   ├── .github/agents/*.agent.md ────────── orchestrator + specialists
+   ├── .github/skills/<name>/SKILL.md ───── repeatable workflows (cross-surface; invoked as /<name>)
+   ├── .github/prompts/*.prompt.md ─────── IDE-only slash-command prompts (optional)
+   └── .github/hooks/*.json ────────────── optional lifecycle hooks (build-gate, doc-freshness, correction-capture)
 ```
 
 **The big idea.** Tiny `.github/copilot-instructions.md` as router. Every task picks only the docs/agents/instructions it needs. Specialist agents do focused work. The orchestrator dispatches.
@@ -37,8 +38,10 @@
 | Canonical docs | `docs/<UPPERCASE>.md` | Untouched. Full detail. |
 | Path-globbed instructions | `.github/instructions/<domain>.instructions.md` | Auto-loaded by Copilot when editing files matching `applyTo:` glob. |
 | Specialist agents | `.github/agents/<name>.agent.md` | One purpose each. Bounded by "I CAN" / "I CANNOT" lists + `tools:` allowlist. |
-| Orchestrator | `.github/agents/<PROJECT_SLUG>-orchestrator.md` | Manager agent. Picks specialists per task. |
-| Prompt files (slash commands) | `.github/prompts/<workflow>.prompt.md` | Repeatable workflows. Invoke via `/<workflow>` in Chat. |
+| Orchestrator | `.github/agents/<PROJECT_SLUG>-orchestrator.agent.md` | Manager agent. Picks specialists per task. |
+| Skills (slash commands) | `.github/skills/<name>/SKILL.md` | Repeatable workflows on every surface (IDE, cloud agent, CLI). Invoke via `/<name>` or auto-loaded by relevance. |
+| Prompt files (IDE-only) | `.github/prompts/<workflow>.prompt.md` | Optional IDE-only prompts. Invoke via `/<workflow>` in IDE Chat. |
+| Hooks (optional) | `.github/hooks/*.json` | Mechanical gates — block a stop on a red build, force a correction into an instruction file, refuse to end a turn after a production push with stale docs. |
 
 ---
 
@@ -93,13 +96,19 @@ Assign a Copilot agent to a GitHub issue or PR. The cloud agent runs autonomousl
 
 ### Mode 6 — Slash commands (`/<workflow>`)
 
-Type `/` in Chat. Pick from the prompt file picker, or type the name: `/<workflow-name>`.
+Type `/` in Chat. Pick a skill (or an IDE-only prompt file) from the picker, or type the name: `/<workflow-name>`.
 
 **Use for:** invoking a documented workflow.
 
+### Mode 7 — Copilot CLI (`copilot -p`)
+
+From a terminal, `cd` into the repo and run `copilot -p "<task>" --agent=<PROJECT_SLUG>-orchestrator` (tools granted with `--allow-tool=`). Same agents, instruction files, skills and hooks as the IDE — the CLI loads them from the working directory.
+
+**Use for:** scripted, CI or scheduled runs.
+
 ### Why we don't make the orchestrator the "always-on" persona
 
-Putting the orchestrator's persona in `.github/copilot-instructions.md` would auto-load it for inline completions and code review — pollution. Keep the persona in `.github/agents/<PROJECT_SLUG>-orchestrator.md` and invoke explicitly via `@<PROJECT_SLUG>-orchestrator`.
+Putting the orchestrator's persona in `.github/copilot-instructions.md` would auto-load it for inline completions and code review — pollution. Keep the persona in `.github/agents/<PROJECT_SLUG>-orchestrator.agent.md` and invoke explicitly via `@<PROJECT_SLUG>-orchestrator`.
 
 ---
 
@@ -196,7 +205,7 @@ Target: staging / production
 @context-librarian
 
 Tidy the docs/ai-context/, .github/instructions/, .github/agents/,
-.github/prompts/ surface. Consolidate duplicates, flag conflicts (do not
+.github/skills/, .github/prompts/ surface. Consolidate duplicates, flag conflicts (do not
 silently resolve), keep .github/copilot-instructions.md small.
 
 Scope: <DESCRIBE>

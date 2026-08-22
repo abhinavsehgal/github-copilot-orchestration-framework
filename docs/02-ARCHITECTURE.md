@@ -68,7 +68,7 @@ Contains:
 Does NOT contain:
 - Long technical detail (lives in canonical docs)
 - Per-domain gotchas (lives in `.github/instructions/`)
-- The orchestrator's full persona (lives in `.github/agents/<project>-orchestrator.md`)
+- The orchestrator's full persona (lives in `.github/agents/<project>-orchestrator.agent.md`)
 - Sprint history or audit content (lives in `docs/_archive/`)
 
 ⚠ **Size budget.** The current docs say repository instructions "must be no longer than 2 pages" (and any single instruction file should stay under about 1,000 lines). Front-load the rules that matter most for code review — good practice, not a hard cap; the older "code review reads only the first 4,000 characters" sentence is no longer on the docs (Pitfall 2).
@@ -136,7 +136,7 @@ description: <one sentence — when to use this>   # required
 <the procedure — steps, checks, Definition of Done>
 ```
 
-Invoked as `/<skill-name>`, or loaded automatically when the task is relevant. Supported by the cloud agent, code review, the Copilot CLI, the Copilot app, and agent mode in VS Code and JetBrains. Also discovered from `.claude/skills/` and `.agents/skills/`; personal skills live in `~/.copilot/skills/`. See Chapter 5 for the full frontmatter.
+Invoked as `/<skill-name>`, or loaded automatically when the task is relevant. Supported by the cloud agent, code review, the Copilot CLI, and agent mode in VS Code and JetBrains. Also discovered from `.claude/skills/` and `.agents/skills/`; personal skills live in `~/.copilot/skills/`. See Chapter 5 for the full frontmatter.
 
 Use skills for bug investigation, feature build, QA pass, compliance review, and the project's engineering playbook (`templates/engineering-playbook-skill.md.template`).
 
@@ -204,7 +204,7 @@ Required: `_archive/README.md` documenting the archive convention.
 ### Predictability for Copilot
 
 Every agent knows where to find:
-- Its own contract: `.github/agents/<self>.md`
+- Its own contract: `.github/agents/<self>.agent.md`
 - Repository-wide rules: `.github/copilot-instructions.md` (auto-loaded)
 - Path-specific rules: `.github/instructions/*.instructions.md` (auto-loaded when editing matching files)
 - Reusable workflows: `.github/skills/*/SKILL.md` (invoked via `/<name>` on every surface) — plus IDE-only `.github/prompts/*.prompt.md`

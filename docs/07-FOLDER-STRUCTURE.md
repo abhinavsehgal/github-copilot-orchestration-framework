@@ -8,14 +8,14 @@ How to organize Copilot config and documentation so the AI (and humans) always k
 .github/
 ├── copilot-instructions.md             ← repo-wide router (auto-loaded everywhere)
 ├── agents/                             ← orchestrator + specialists
-│   ├── <project>-orchestrator.md
-│   └── <specialist>.md
+│   ├── <project>-orchestrator.agent.md
+│   └── <specialist>.agent.md
 ├── instructions/                       ← path-globbed invariants (frontmatter has applyTo:)
 │   └── <domain>.instructions.md
-├── prompts/                            ← repeatable workflows (slash commands)
-│   └── <workflow>.prompt.md
 ├── skills/                             ← repeatable workflows (cross-surface) — v1.2
 │   └── <name>/SKILL.md
+├── prompts/                            ← repeatable workflows, IDE-only (slash commands)
+│   └── <workflow>.prompt.md
 └── hooks/                              ← optional mechanical enforcement — v1.2
     └── framework.json                  (chat modes are retired: rename .chatmode.md → .agent.md)
 ```
@@ -26,6 +26,9 @@ How to organize Copilot config and documentation so the AI (and humans) always k
 docs/
 ├── ai-context/                         ← TIER 1: orientation maps (read by Copilot agents)
 │   ├── INDEX.md
+│   ├── PROJECT.md                      ← current truth: what is live where (Chapter 11)
+│   ├── LEARNINGS.md                    ← decisions, failures, corrections (Chapter 11)
+│   ├── GLOSSARY.md                     ← one name per concept (Chapter 11)
 │   ├── HANDOFF_SCHEMA.md
 │   ├── ORCHESTRATION_SPOONFEEDER.md
 │   └── <area>-experience.md
@@ -34,6 +37,7 @@ docs/
 ├── API.md
 ├── TECH_STACK.md
 ├── <UPPERCASE>.md
+├── <AREA>_BACKLOG.md                   ← deferred work, one per area (Chapter 11)
 │
 └── _archive/                           ← TIER 3: frozen historical
     ├── README.md
@@ -66,6 +70,7 @@ docs/
 - `INDEX.md` — task-type → docs + agent map
 - `HANDOFF_SCHEMA.md` — bidirectional handoff schema
 - `ORCHESTRATION_SPOONFEEDER.md` — human-facing usage guide
+- `PROJECT.md` / `LEARNINGS.md` / `GLOSSARY.md` — the project-truth set (Chapter 11)
 - `MIGRATION_LEDGER.md` (optional) — tracks doc/structure migration progress
 - `LEGACY_BACKUP.md` (optional) — frozen pre-refactor snapshot
 
@@ -117,8 +122,9 @@ Is it the system architecture, API reference, or another full-detail doc?
 Is it a path-globbed invariant ("don't do X when editing Y")?
   → .github/instructions/<domain>.instructions.md (with applyTo: in frontmatter)
 
-Is it a multi-step workflow that recurs (manually invoked)?
-  → .github/prompts/<workflow>.prompt.md
+Is it a multi-step workflow that recurs?
+  → .github/skills/<name>/SKILL.md (every surface); only if it is started by hand in the IDE
+    and needs ${input:…} prompting → .github/prompts/<workflow>.prompt.md
 
 Is it an agent persona definition?
   → .github/agents/<name>.agent.md
@@ -187,6 +193,7 @@ monorepo-root/
 │   ├── copilot-instructions.md         ← root router; mentions per-package files exist
 │   ├── agents/                         ← orchestrator + cross-package specialists
 │   ├── instructions/                   ← cross-package instructions
+│   ├── skills/
 │   └── prompts/
 ├── docs/                               ← cross-package docs
 │   └── ai-context/
@@ -204,11 +211,11 @@ monorepo-root/
 ```
 your-product-repo/
 ├── .github/agents/
-│   ├── orchestrator.md
-│   ├── product-a-frontend.md
-│   ├── product-a-backend.md
-│   ├── product-b-frontend.md
-│   └── shared-database.md
+│   ├── <project>-orchestrator.agent.md
+│   ├── product-a-frontend.agent.md
+│   ├── product-a-backend.agent.md
+│   ├── product-b-frontend.agent.md
+│   └── shared-database.agent.md
 ├── .github/instructions/
 │   ├── product-a.instructions.md       (applyTo: "src/products/a/**")
 │   └── product-b.instructions.md       (applyTo: "src/products/b/**")
@@ -227,10 +234,10 @@ your-app/
 │   └── mobile/                         ← React Native / Flutter / native
 ├── packages/                           ← shared libs
 └── .github/agents/
-    ├── web-ui.md                       ← only edits apps/web/
-    ├── mobile-ui.md                    ← only edits apps/mobile/
-    ├── shared-libs.md                  ← only edits packages/
-    └── backend-api.md                  ← stays separate if hosted elsewhere
+    ├── web-ui.agent.md                 ← only edits apps/web/
+    ├── mobile-ui.agent.md              ← only edits apps/mobile/
+    ├── shared-libs.agent.md            ← only edits packages/
+    └── backend-api.agent.md            ← stays separate if hosted elsewhere
 ```
 
 ## Organization-level configuration
@@ -241,7 +248,7 @@ If you have GitHub Copilot Business or Enterprise:
 your-org/
 ├── .github-private/                    ← special org-level repo
 │   └── agents/
-│       └── company-wide-agent.md       ← available across all org repos
+│       └── company-wide-agent.agent.md ← available across all org repos
 └── (regular repos as above)
 ```
 

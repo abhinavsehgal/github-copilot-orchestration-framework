@@ -35,6 +35,7 @@ The orchestrator is the manager. It reads the task, classifies it, picks the min
 1. `.github/copilot-instructions.md` — auto-loaded; just confirm you've absorbed it.
 2. `docs/ai-context/INDEX.md` — pick the orientation maps that match the task.
 3. The 1–3 orientation maps the INDEX points to (50–150 lines each).
+3.5. `docs/ai-context/PROJECT.md` §3 (what is live where) before assuming anything is deployed; skim `docs/ai-context/LEARNINGS.md` §D (agent corrections) before the first edit.
 4. **Path-matching `.github/instructions/*.instructions.md` files auto-load when editing matching files. Verify they loaded; if not, read manually before editing.**
 
 Optional (only when the task warrants):
@@ -125,5 +126,6 @@ If any of these is missing, the task is not done. Push back on specialists that 
 - `docs/ai-context/HANDOFF_SCHEMA.md` — bidirectional handoff schema (required reading before any delegation).
 - `docs/ai-context/ORCHESTRATION_SPOONFEEDER.md` — the human-facing usage guide.
 - `docs/ai-context/INDEX.md` — task → docs + instructions + agent map.
-- `.github/prompts/investigate-bug.prompt.md` — bug workflow (slash command `/investigate-bug`).
-- `.github/prompts/build-feature.prompt.md` — feature workflow (slash command `/build-feature`).
+- `.github/skills/<PROJECT_SLUG>-engineering/SKILL.md` — the six-gate playbook (`/<PROJECT_SLUG>-engineering`).
+- `.github/skills/investigate-bug/SKILL.md` — bug workflow (`/investigate-bug`).
+- `.github/skills/build-feature/SKILL.md` — feature workflow (`/build-feature`).

@@ -125,4 +125,4 @@ third parties. Link `docs/ARCHITECTURE.md` for depth.>
 - `docs/ai-context/INDEX.md` — task-type routing.
 - `docs/ai-context/LEARNINGS.md` — decisions, failures, corrections.
 - `<CHANGELOG_PATH>` — dated release log.
-- `docs/ai-context/HOOKS.md` — what is enforced mechanically (if `.github/hooks/` is installed).
+- `.github/hooks/*.json` — what is enforced mechanically (if installed).

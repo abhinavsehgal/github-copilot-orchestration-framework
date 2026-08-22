@@ -23,7 +23,7 @@ excludeAgent: "code-review"
 
 **How to apply:** <how>
 
-<ADD_AS_MANY_RULES_AS_NEEDED — but split into a separate file if this one passes ~150 lines or 3,000 chars>
+<ADD_AS_MANY_RULES_AS_NEEDED — but split into a separate file if this one passes ~150 lines>
 
 ## What NOT to do
 
@@ -56,6 +56,6 @@ A bad instruction file:
 - Contradicts another instruction file (have the context-librarian reconcile)
 - Has no `applyTo:` (no signal for Copilot to load it)
 - Long rationale paragraph (move to canonical doc)
-- > 150 lines / > 3,000 chars (split into multiple files)
+- > 150 lines (split into multiple files)
 
 When you've shipped 3-5 rules in this file, stop. Add more only when production teaches you new gotchas.

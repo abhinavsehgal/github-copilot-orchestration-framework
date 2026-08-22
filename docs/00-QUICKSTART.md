@@ -29,10 +29,11 @@ Nine words. Everything else in this guide is made of these.
 
 ## Part 1 · Before you start (15 minutes, once per person)
 
-### 1. Make sure you have the four tools
+### 1. Make sure you have the four tools (plus Node.js only if you will turn on hooks)
 
 **Why:** VS Code runs the agents; the Copilot CLI runs them from a terminal and is what the
-workspace uses to reach into other repos; git and `jq` are used by the workspace scripts.
+workspace uses to reach into other repos; git and `jq` are used by the workspace scripts. The
+shipped hook templates are Node scripts — any language works for a hook, these just happen to be `.mjs`.
 
 ```bash
 # Each of these should print a version, not an error
@@ -46,8 +47,8 @@ node --version         # only needed if you later turn on hooks
 Missing `copilot`? Install it from GitHub's Copilot CLI page (docs.github.com → Copilot → Copilot
 CLI → Install). Missing `jq`? `brew install jq` on a Mac, `winget install jqlang.jq` on Windows.
 
-✓ **You know it worked when:** all five print a version, and in VS Code the Copilot Chat panel opens
-with **Agent** in the mode dropdown.
+✓ **You know it worked when:** the first four print a version (Node too if you plan on hooks), and in
+VS Code the Copilot Chat panel opens with **Agent** in the mode dropdown.
 
 ### 2. Get the framework onto your disk
 
@@ -125,10 +126,12 @@ What it creates:
 | `.github/agents/<name>.agent.md` ×N | The workers. |
 | `.github/instructions/<area>.instructions.md` | The sticky notes, each with an `applyTo:` glob. |
 | `.github/skills/<repo>-engineering/SKILL.md` | The six-gate working method every task follows. |
+| `.github/skills/investigate-bug/`, `build-feature/`, `commit-push-pr/`, `correction-capture/`, `verify-build/` (`SKILL.md` each) | The recipe cards (`/investigate-bug`, `/build-feature`, `/commit-push-pr`, `/correction-capture`, `/verify-build`) — skills, so they also run on the cloud agent and CLI. |
 | `docs/ai-context/PROJECT.md` | "What is true right now" — what's live where, verified commands. |
 | `docs/ai-context/LEARNINGS.md` | Decisions, failed approaches, corrections. |
 | `docs/ai-context/HANDOFF_SCHEMA.md`, `INDEX.md`, `GLOSSARY.md` | The note format, the map, the one-name-per-thing list. |
 | `docs/<AREA>_BACKLOG.md` | Where "we'll do it later" must be written down. |
+| `docs/ai-context/<area>.md`, `ORCHESTRATION_SPOONFEEDER.md`, `docs/_archive/README.md` | Per-area orientation skeletons, the human usage guide, the archive convention. |
 
 ✓ `ls .github/agents` lists your orchestrator and specialists. Your normal build still passes.
 
@@ -179,8 +182,10 @@ you've seen people skip the written rules. `docs/10-MECHANICAL-ENFORCEMENT.md` i
 
 ```bash
 # when you're ready:
+mkdir -p .github/hooks .github/scripts
 cp ~/frameworks/copilot/templates/hooks/hooks.json.template .github/hooks/framework.json
-mkdir -p .github/scripts && cp ~/frameworks/copilot/templates/hooks/*.mjs.template .github/scripts/
+cp ~/frameworks/copilot/templates/hooks/*.mjs.template .github/scripts/
+echo '.github/hooks/.state/' >> .gitignore      # the hooks' state file — never committed
 # rename *.mjs.template → *.mjs, fill the <PLACEHOLDERS>, restart VS Code
 ```
 
@@ -213,7 +218,17 @@ cd <team>-workspace
 
 ### 2. Copy the workspace templates into place
 
-**Why:** fourteen files, each with a fixed home. `templates/workspace/README.md` has the same table.
+**Why:** fourteen files, each with a fixed home. The bootstrap script does the copying AND fills the
+per-repo placeholders, `.gitignore`, the `.code-workspace` folder list, the orchestrator's subagent
+allowlist and the service-map rows from `workspace.json` — so fill the manifest first (step 3) if you
+want the short path:
+
+```bash
+cp ~/frameworks/copilot/templates/workspace/workspace.json.template workspace.json   # fill it, then:
+bash ~/frameworks/copilot/templates/workspace/bootstrap.sh.template ~/frameworks/copilot
+```
+
+Or by hand (`templates/workspace/README.md` has the same table):
 
 ```bash
 T=~/frameworks/copilot/templates/workspace
@@ -275,8 +290,8 @@ and skills are all available at once. The workspace file also switches on nested
 ✓ The Explorer shows the workspace folder plus every child. The agent dropdown shows
 `<team>-orchestrator`, `contract-guardian`, `service-mapper` *and* each repo's own orchestrator.
 
-> ⚠ Every repo ships a worker called `backend-api`. On the desk those names collide. Rule: from the
-> workspace, **only ever pick an orchestrator by name**. Never a worker. The workspace manager
+> ⚠ If two repos both ship a worker called `backend-api`, on the desk those names collide. Rule: from
+> the workspace, **only ever pick an orchestrator by name**. Never a worker. The workspace manager
 > already knows this.
 
 ### 6. Commit the workspace

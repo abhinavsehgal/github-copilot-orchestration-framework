@@ -213,7 +213,7 @@ makes Chapter 12's cross-repo contracts workable:
   may. A deliberate divergence is written down with its reason.
 - **Same heading ⇒ same endpoint.** Before building a panel that mirrors another client's panel,
   open that client's component and find what it actually *fetches*. Two cards with the same title
-  and the same chart fed from two different endpoints showed one family two different answers to one
+  and the same chart fed from two different endpoints showed one user two different answers to one
   question. Record the panel → source pairing in the orientation map.
 - **One brain.** Business logic lives server-side; clients render. If a client needs derived data
   another client computes locally, extend the API rather than porting the computation.

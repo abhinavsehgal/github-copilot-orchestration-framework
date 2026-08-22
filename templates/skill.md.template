@@ -1,0 +1,33 @@
+---
+# File: .github/skills/<SKILL_NAME>/SKILL.md — an AGENT SKILL (cloud agent, code review, CLI, VS Code, JetBrains).
+# Invoked as /<SKILL_NAME>, or auto-loaded when the request matches `description`. Keep `name` = the folder name.
+name: <SKILL_NAME>
+description: <ONE SENTENCE — what this does AND when to use it; lead with the words a request would contain, e.g. "Investigate a reported bug: trace UI → API → data → permissions → tests, smallest safe fix. Use when the user reports something broken.">
+---
+
+# /<SKILL_NAME>
+
+> **When to invoke.** <the triggers — task shapes, phrases, situations>
+> **Never.** <what this skill must not be used for — hand those to <other skill/agent>>
+
+## Steps
+
+### 1. <Step name>
+<What to do. Cite the project's sources of truth (`docs/ai-context/PROJECT.md` §6) and the instruction
+files that apply. Name the evidence this step must produce.>
+
+### 2. <Next step>
+<…>
+
+### N. Report
+Files changed · instruction files read · checks run **with results** · risks and what was NOT verified
+(with its confidence class) · deferred work written to `docs/<AREA>_BACKLOG.md`.
+
+## Definition of Done
+- [ ] <observable outcome 1>
+- [ ] <observable outcome 2>
+- [ ] The build/tests ran and the result is quoted in the report (a killed run is inconclusive, not failed)
+
+## Cross-links
+- `docs/ai-context/HANDOFF_SCHEMA.md` — if this skill runs under the orchestrator, its report aligns with the `return:` block.
+- `.github/instructions/<related>.instructions.md` — the hard rules this skill must honour.

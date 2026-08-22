@@ -22,7 +22,7 @@ _archive/
 
 ## Rules
 
-- **Do NOT link from active docs into _archive/.** Active documentation (`.github/copilot-instructions.md`, `docs/ai-context/*`, `.github/agents/`, `.github/instructions/`, `.github/prompts/`) must reference only canonical sources at `docs/` root or `docs/ai-context/`. Linking to archive content would resurrect drift.
+- **Do NOT link from active docs into _archive/.** Active documentation (`.github/copilot-instructions.md`, `docs/ai-context/*`, `.github/agents/`, `.github/instructions/`, `.github/skills/`, `.github/prompts/`) must reference only canonical sources at `docs/` root or `docs/ai-context/`. Linking to archive content would resurrect drift.
 - **Do NOT delete archive content.** History matters for audits and post-mortems. If something is genuinely stale beyond reference value, propose deletion in a PR — do not silently drop it.
 - **Do NOT move content out of archive back to `docs/` root.** Archived content is frozen at the moment it was archived. If a topic is still relevant, write a fresh canonical doc that supersedes the archived one.
 - **Date subdirectories are append-only.** When adding new archived material, use the year-month folder matching when the content was originally written.

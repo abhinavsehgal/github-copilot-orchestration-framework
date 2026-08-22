@@ -23,9 +23,9 @@ description: Validate → commit → push → open/update PR against the project
 - You're partway through a multi-file change that isn't done yet — finish first
 - The branch has a force-push pending — that's a different workflow
 
-## Inputs
+## Inputs (from the conversation — skills have no `${input:…}` prompting; that is a prompt-file feature)
 
-- `${input:summary:Optional commit summary override (Conventional Commit format). Leave empty to auto-generate.}`
+- **summary** — optional commit summary override (Conventional Commit format) if the user gave one; otherwise auto-generate.
 
 ## Workflow — strict, sequential. STOP at any failure.
 
@@ -36,7 +36,7 @@ Run these first (the assistant should ask Copilot to execute them in the termina
 - **Current branch:** `git branch --show-current`
 - **Working tree status:** `git status --short`
 - **Diff stat against base:** `git diff --stat <DEFAULT_BASE_BRANCH>...HEAD` (fall back to `origin/<DEFAULT_BASE_BRANCH>` if local is stale)
-- **Build-relevant files dirty:** filter `git status --porcelain` for paths matching `<BUILD_RELEVANT_GLOB — e.g. src/**/*.{ts,tsx,js,jsx}>` plus top-level config files (`<NEXT_CONFIG>`, `<TSCONFIG>`, etc.)
+- **Build-relevant files dirty:** filter `git status --porcelain` for paths matching `<BUILD_RELEVANT_GLOB — e.g. src/**/*.{ts,tsx,js,jsx}>` plus top-level build config files (`<BUILD_CONFIG_FILE_1>`, `<BUILD_CONFIG_FILE_2>` — e.g. `pyproject.toml`, `go.mod`, `tsconfig.json`, `Cargo.toml`)
 - **Existing PR for this branch:** `gh pr list --base <DEFAULT_BASE_BRANCH> --head $(git branch --show-current) --json url,title,state`
 - **Recent commits on this branch:** `git log --oneline <DEFAULT_BASE_BRANCH>..HEAD`
 - **Last 5 commits on `<DEFAULT_BASE_BRANCH>` (style reference):** `git log --oneline <DEFAULT_BASE_BRANCH>` then `head -5`
@@ -89,7 +89,7 @@ Use the project style (read recent commits on `<DEFAULT_BASE_BRANCH>` from Step 
 <PROJECT_TRAILER — e.g. "Co-Authored-By: GitHub Copilot <copilot@github.com>">
 ```
 
-If `${input:summary}` is set, use it as the commit summary; otherwise generate one.
+If the user supplied a summary, use it as the commit summary; otherwise generate one.
 
 Use a HEREDOC to preserve newlines:
 
@@ -163,8 +163,8 @@ Print:
 
 ## Cross-links
 
-- `docs/10-MECHANICAL-ENFORCEMENT.md` — why this prompt exists alongside `applyTo:` instructions
-- `docs/04-HANDOFF-SCHEMA.md` — for orchestrator-driven invocations of this prompt as the final hand-back step
+- Framework chapter 10 (`docs/10-MECHANICAL-ENFORCEMENT.md` in the framework repo) — why this skill exists alongside `applyTo:` instructions and the build-gate hook
+- `docs/ai-context/HANDOFF_SCHEMA.md` — for orchestrator-driven invocations of this skill as the final hand-back step
 
 ---
 
@@ -176,7 +176,7 @@ Customize before shipping:
 - `<DEFAULT_BASE_BRANCH>` — `develop` or `main` or `dev` etc.
 - `<BUILD_RELEVANT_GLOB>` — language-specific (e.g. `**/*.go` for Go, `**/*.py` for Python)
 - `<BUILD_COMMAND>` — `npm run build` / `pytest` / `go build ./...` etc.
-- `<NEXT_CONFIG>` / `<TSCONFIG>` — top-level config files relevant to your stack
+- `<BUILD_CONFIG_FILE_1>` / `<BUILD_CONFIG_FILE_2>` — top-level build config files relevant to your stack
 - `<PROJECT_TRAILER>` — your team's standard Co-Authored-By or sign-off
 
 A good `/commit-push-pr` is invoked **at least daily**. If it's invoked once a quarter, the upfront design cost doesn't pay back — keep it as documentation, not a prompt.

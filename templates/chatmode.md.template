@@ -8,9 +8,9 @@ model: <optional — leave unset to use default>
 
 # <Chat Mode Display Name>
 
-> ⚠ **Recommendation:** for new projects, prefer `.github/agents/<NAME>.md` (custom agent format) over `.github/chatmodes/<NAME>.chatmode.md` (older format). `.agent.md` is the more future-proof format with more metadata fields.
+> ⚠ **Chat modes are RETIRED.** Do not create a `.github/chatmodes/<NAME>.chatmode.md`; create `.github/agents/<NAME>.agent.md` (custom agent format) instead — `description`, `tools` and `model` carry over unchanged (Pitfall 7).
 >
-> Use this template only if you specifically need a chat-mode-only feature, OR if you have legacy chat-mode files you don't want to migrate yet.
+> Use this file only as a field-name reference while renaming legacy `.chatmode.md` files to `.agent.md`.
 
 <2-3 SENTENCE PERSONA DESCRIPTION — what role does this Copilot mode adopt? When is it most useful?>
 
@@ -57,4 +57,4 @@ Chat modes (`.chatmode.md`) and custom agents (`.agent.md`) overlap heavily. Dif
 | Cloud agent support | No | Yes |
 | Cross-IDE consistency | Some drift | Better |
 
-Recommended: use `.agent.md` for new work. Keep this template in case you have legacy chat-mode files to maintain.
+Recommended: use `.agent.md` for all work. Keep this template only until your last legacy chat-mode file has been renamed.

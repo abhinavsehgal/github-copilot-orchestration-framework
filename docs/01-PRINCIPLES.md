@@ -6,12 +6,12 @@ The seven principles this framework rests on. Every other doc, prompt, and templ
 
 One coordinator agent reads tasks, classifies them, picks the right specialists, and aggregates findings. Specialists do focused work in their own context (where the surface allows isolation).
 
-The orchestration is **prescriptive documentation**, not runtime code. The "orchestrator" is a `.github/agents/<project>-orchestrator.md` file with instructions. There is no orchestration service, no message queue, no central process.
+The orchestration is **prescriptive documentation**, not runtime code. The "orchestrator" is a `.github/agents/<project>-orchestrator.agent.md` file with instructions. There is no orchestration service, no message queue, no central process.
 
 This matters because:
 - It works with any Copilot surface that recognizes custom agents (Chat in VS Code / JetBrains / Visual Studio, the cloud agent on github.com, the Copilot CLI)
 - It's fully transparent — every rule is in version control as plain markdown
-- It's reversible — delete `.github/agents/`, `.github/instructions/`, `.github/prompts/` and you're back to default Copilot
+- It's reversible — delete `.github/agents/`, `.github/instructions/`, `.github/skills/`, `.github/prompts/` (and `.github/hooks/` if installed) and you're back to default Copilot
 - Hard runtime enforcement (Copilot hooks — `.github/hooks/*.json`, v1.2) can be added later as a separate hardening pass
 
 ## 2. Each specialist runs with focused tool scope
@@ -69,7 +69,7 @@ Everything else is **documentation discipline** — the agent follows its instru
 - "Read the right instruction file before editing"
 - Definition of Done completeness
 
-Don't conflate the two layers. When you say "the orchestrator can only delegate to project specialists," that's documentation in Copilot (no runtime allowlist for cross-agent invocation in current versions). When you say "the legal-compliance agent cannot edit files," that IS runtime-enforced via the `tools:` field.
+Don't conflate the two layers. When you say "the orchestrator can only delegate to project specialists," that is runtime-enforced in VS Code (the orchestrator's `agents:` list is a subagent allowlist) and documentation on the cloud agent, which ignores the field (Pitfall 9). When you say "the legal-compliance agent cannot edit files," that IS runtime-enforced via the `tools:` field.
 
 ## 6. Three-tier documentation
 
@@ -92,7 +92,7 @@ The orientation maps live in `docs/ai-context/` even in a Copilot-only project �
 - Pollute code-review prompts with delegation instructions
 - Force every interaction through the orchestrator's "delegate everything" body
 
-`.github/copilot-instructions.md` should be a **thin router** — golden rules + workflow + cross-links. The orchestrator agent (`.github/agents/<project>-orchestrator.md`) is invoked explicitly when the user picks it from the agent dropdown or types `@<project>-orchestrator` in chat.
+`.github/copilot-instructions.md` should be a **thin router** — golden rules + workflow + cross-links. The orchestrator agent (`.github/agents/<project>-orchestrator.agent.md`) is invoked explicitly when the user picks it from the agent dropdown or types `@<project>-orchestrator` in chat.
 
 Three invocation modes coexist:
 - **Default** — inline completions + plain Chat (uses repository-wide instructions only)

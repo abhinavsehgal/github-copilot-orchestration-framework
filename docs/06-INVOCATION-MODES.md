@@ -159,7 +159,7 @@ Putting the orchestrator's full delegation persona there would:
 - **Pollute code review** with delegation instructions ("delegate this fix to backend-api")
 - **Force every interaction** through the orchestrator's "delegate, don't implement" pattern
 
-Instead, `.github/copilot-instructions.md` is a **thin router** — golden rules + workflow + cross-links. The orchestrator persona is in `.github/agents/<project>-orchestrator.md` and only loads when explicitly selected.
+Instead, `.github/copilot-instructions.md` is a **thin router** — golden rules + workflow + cross-links. The orchestrator persona is in `.github/agents/<project>-orchestrator.agent.md` and only loads when explicitly selected.
 
 ## Mode comparison table
 

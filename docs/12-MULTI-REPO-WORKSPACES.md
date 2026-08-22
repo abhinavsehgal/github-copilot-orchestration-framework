@@ -13,7 +13,7 @@
 
 Short answer: **three layers, each optional, each building on the one below.** The per-repo
 framework is layer 1 and stays mandatory. Shared specialists move to the organisation's
-`.github`/`.github-private` repo (layer 2) the moment two repos would otherwise carry copies. A
+`.github`/`.github-private` repo (layer 2) once three or more repos would otherwise carry copies. A
 workspace repo (layer 3) — a `.code-workspace` file plus the cross-repo orchestrator, service map
 and contract rules, with the children as gitignored clones and no CI — exists only when tasks
 *routinely* cross repos. The teammate's instinct is right; what needs correcting is **what lives
@@ -101,7 +101,7 @@ workspace/                                  ← its own git repo; NO CI; deploys
 │   │   └── cross-repo-contracts.instructions.md   ← applyTo: "**" — the contract protocol, always on
 │   ├── skills/
 │   │   └── delegate/SKILL.md                ← /delegate <repo> <handoff> — runs the child's orchestrator via the CLI
-│   └── hooks/framework.json                 ← workspace hooks (correction-capture only)
+│   └── hooks/framework.json                 ← optional, from templates/hooks/ (correction-capture only); not among the fourteen workspace files
 ├── scripts/
 │   ├── sync-repos.sh                        ← clone/fetch every repo in the manifest; never resets a branch
 │   └── delegate.sh                          ← cd <child> && copilot -p … --agent=<repo>-orchestrator

@@ -2,6 +2,25 @@
 
 All notable changes to the GitHub Copilot Orchestration Framework. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.1] — 2026-08-22
+
+### Fixed — same-day audit of v1.2.0 (stale text, contradictions, install gaps)
+
+- **BOOTSTRAP created IDE-only prompt files as the starter workflows and never installed the three shipped skills** (`commit-push-pr`, `correction-capture`, `verify-build`) that the router and the quickstart invoke by name — Step 8 now creates skills and installs those three; pre-flights also cover `.github/skills/` and `.github/hooks/`.
+- Stale "no hooks / eventually exposes hooks / no runtime allowlist / first 4,000 characters / chat modes are fine to keep" wording removed from README, chapters 1, 7, 8, 12, the runbook, the spoonfeeder, the INDEX, instructions and prompt-file templates; bare `.github/agents/<name>.md` → `.agent.md` throughout; a nonexistent `docs/ai-context/HOOKS.md` reference replaced by `.github/hooks/*.json`.
+- Runbook title was mangled by the v1.2 blockquote; its phases now match quickstart Part 2 (skills-first, commit/PR step, REFINEMENT in the quarterly list).
+- `templates/HANDOFF_SCHEMA.md.template` gained the v1.2 optional fields chapter 4 documents; `templates/SPOONFEEDER.md.template` gained skills/hooks rows and a CLI mode; `templates/skills/commit-push-pr` dropped stack-specific config placeholders (`<NEXT_CONFIG>`, `<TSCONFIG>`) for `<BUILD_CONFIG_FILE_n>`; the correction-capture skill/prompt lost a product-specific example and a nonexistent `/inventory`.
+- Chapter 12 layer-2 threshold said "two repos" in one place and "three" in another — three; layout no longer lists a workspace `hooks/framework.json` that has no template; README comparison table now says Claude rules use native `paths:` frontmatter.
+- `doc-freshness-track.mjs` gained Rule 12 (a push in another repository is not this repo's push) and `<REPO_NAME_FRAGMENT>`.
+
+### Added
+
+- **`templates/workspace/bootstrap.sh.template`** — creates the whole workspace layer from a filled `workspace.json`: copies every file, fills placeholders, generates `.gitignore` and the `.code-workspace` folder list from the manifest, fills the orchestrator's `agents:` allowlist and the service-map rows, lists what remains. Quickstart Part 3 step 2 uses it.
+- **`templates/skill.md.template`** — generic agent-skill shape (only the engineering playbook had one).
+- README: companion-editions section.
+
+---
+
 ## [1.2.0] — 2026-08-22
 
 ### Retracted — the platform moved (verified against docs.github.com + code.visualstudio.com, 2026-08-22)
@@ -21,7 +40,7 @@ Three claims this framework made in v1.0/v1.1 are no longer true, and one number
 - **Templates:** `PROJECT.md`, `LEARNINGS.md`, `BACKLOG.md`, `GLOSSARY.md`, `engineering-playbook-skill.md` (as an agent skill); `hooks/` (`hooks.json`, `hook-io.mjs`, `correction-detect.mjs`, `doc-freshness-track.mjs`, `lint-fix.mjs`, `stop-gate.mjs` — Patterns 2–5 on the real Copilot contract, flag-file design so no undocumented transcript format is parsed); `skills/` (`commit-push-pr`, `correction-capture`, `verify-build` — cross-surface successors of the v1.1 prompt files); `workspace/` (the whole layer 3: `.code-workspace`, `workspace.json`, router, orchestrator + `contract-guardian` + `service-mapper` agents, `cross-repo-contracts.instructions.md`, `/delegate` skill, `sync-repos.sh`, `delegate.sh`, service map, contracts doc).
 - **Chapter 4:** optional additive fields `repo`, `contract_impact`, `contracts_changed`, `deferred_work`; evidence-confidence class on claims. `schema_version` stays 1.
 - **Chapter 6:** the agentic Copilot CLI (`copilot -p`, `--agent=`, `--allow-tool=`) as a mode; surface matrix gains Skills and Hooks rows.
-- **Prompts:** BOOTSTRAP Step 11 generates the project-truth set; REFINEMENT gains §8 platform drift and §9 project-truth freshness.
+- **Prompts:** BOOTSTRAP Step 13 generates the project-truth set; REFINEMENT gains §9 platform drift and §10 project-truth freshness.
 - **Root router template** gains golden rules 9–12 (corrections → instruction files; deferred work written; production push freshens docs; one name per concept).
 
 ### Changed

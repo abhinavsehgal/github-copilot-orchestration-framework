@@ -91,7 +91,7 @@ For each recommendation, give a one-paragraph justification.
 
 ### 9. Platform drift (v1.2.0)
 
-The platform moves under the framework's conventions (Pitfall 20). Re-read the official pages for custom agents, Agent Skills, hooks and the Copilot CLI, and diff them against what this project's agents, instruction files, skills and `docs/ai-context/HOOKS.md` assume. Three claims this framework itself made in v1.0/v1.1 are now retracted — check the project has not inherited them:
+The platform moves under the framework's conventions (Pitfall 20). Re-read the official pages for custom agents, Agent Skills, hooks and the Copilot CLI, and diff them against what this project's agents, instruction files, skills and `.github/hooks/*.json` assume. Three claims this framework itself made in v1.0/v1.1 are now retracted — check the project has not inherited them:
 
 - "Copilot has no hooks" — it does (`.github/hooks/*.json`; `preToolUse` can deny, `agentStop` can block). Is any enforcement still living only in a pre-commit hook or IDE setting because of the old claim?
 - "Cross-agent invocation has no allowlist" — VS Code's `agents:` is one; the cloud agent still has none. Does the orchestrator declare `agents:`? Does any specialist?

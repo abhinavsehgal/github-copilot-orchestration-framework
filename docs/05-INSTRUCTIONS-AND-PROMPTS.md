@@ -190,7 +190,7 @@ Type `/<skill-name>` in chat, or let Copilot load the skill automatically when t
 
 ### Surfaces
 
-Supported by the cloud agent, code review, the Copilot CLI, the Copilot app, and agent mode in VS Code and JetBrains. **Prompt files are IDE-only** — VS Code's own guidance for a prompt that agents on the Agent Host don't pick up is "convert it to an agent skill". If a workflow must run from an issue assignment or from `copilot -p` in CI, it is a skill.
+Supported by the cloud agent, code review, the Copilot CLI, and agent mode in VS Code and JetBrains. **Prompt files are IDE-only** — VS Code's own guidance for a prompt that agents on the Agent Host don't pick up is "convert it to an agent skill". If a workflow must run from an issue assignment or from `copilot -p` in CI, it is a skill.
 
 ### Skill structure
 

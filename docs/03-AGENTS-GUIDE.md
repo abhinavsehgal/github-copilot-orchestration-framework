@@ -267,7 +267,7 @@ Extend an existing specialist when:
 
 ❌ **Specialists whose "I CAN" includes "approve production deploys."** That's the project owner's call.
 
-❌ **Putting the orchestrator's persona in `.github/copilot-instructions.md`.** That file is loaded for inline completions and code review too — pollutes everything. Keep the orchestrator persona in `.github/agents/<project>-orchestrator.md`, separate.
+❌ **Putting the orchestrator's persona in `.github/copilot-instructions.md`.** That file is loaded for inline completions and code review too — pollutes everything. Keep the orchestrator persona in `.github/agents/<project>-orchestrator.agent.md`, separate.
 
 ## A note on cloud agent vs IDE chat agents
 

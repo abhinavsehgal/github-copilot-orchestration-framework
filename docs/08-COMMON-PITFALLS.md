@@ -139,7 +139,7 @@ Inline completions are latency-sensitive. The model context for inline completio
 - The current file's open content
 - Some surrounding files (depending on IDE configuration)
 - `.github/copilot-instructions.md` (if present, but truncated for latency)
-- Path-matching `.github/instructions/*.instructions.md` (truncated)
+- Path-matching `.github/instructions/*.instructions.md` (truncated; whether inline completions load these at all is not re-verified — Chapter 6, Mode 1)
 
 **Right answer:** Optimize `.github/copilot-instructions.md` for inline completions: lead with the most important constraints in the first 500 chars. The orchestration / agent routing details belong in agent files (which inline completions don't load anyway).
 
@@ -161,7 +161,7 @@ Without active maintenance, `docs/` accumulates: sprint reports, audit reports r
 
 ## Pitfall 15: Reorganizing `.github/` config without checking IDE behavior
 
-If you rename `.github/agents/foo.md` → `.github/agents/bar.md` mid-task, IDE Copilot Chat may not pick up the change until you reload the IDE. The cloud agent picks up new agent files on the next assignment.
+If you rename `.github/agents/foo.agent.md` → `.github/agents/bar.agent.md` mid-task, IDE Copilot Chat may not pick up the change until you reload the IDE. The cloud agent picks up new agent files on the next assignment.
 
 **Right answer:**
 - Reload your IDE after structural changes to `.github/`

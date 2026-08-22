@@ -4,7 +4,7 @@ Paste this AFTER you have completed the INVENTORY-PROMPT pass and approved the p
 
 ---
 
-I've reviewed the inventory. Now bootstrap the GitHub Copilot Orchestration Framework on this project. Use the templates from `<framework path>` (default: `/Users/<you>/Desktop/github-copilot-orchestration-framework/templates/`). Read those template files before generating anything.
+I've reviewed the inventory. Now bootstrap the GitHub Copilot Orchestration Framework on this project. Use the templates from `<framework path>/templates/` (`~/frameworks/copilot/templates/` if you followed `docs/00-QUICKSTART.md`). Read those template files before generating anything.
 
 ---
 
@@ -22,6 +22,8 @@ mkdir -p .github-pre-bootstrap-backup
 [ -d .github/agents ] && cp -r .github/agents .github-pre-bootstrap-backup/
 [ -d .github/instructions ] && cp -r .github/instructions .github-pre-bootstrap-backup/
 [ -d .github/prompts ] && cp -r .github/prompts .github-pre-bootstrap-backup/
+[ -d .github/skills ] && cp -r .github/skills .github-pre-bootstrap-backup/
+[ -d .github/hooks ] && cp -r .github/hooks .github-pre-bootstrap-backup/
 [ -d .github/chatmodes ] && cp -r .github/chatmodes .github-pre-bootstrap-backup/
 [ -f AGENTS.md ] && cp AGENTS.md .github-pre-bootstrap-backup/
 ls -la .github-pre-bootstrap-backup/
@@ -50,11 +52,10 @@ for inst in <name-1> <name-2> <...>; do
   fi
 done
 
-# For each proposed prompt file
-for prompt in investigate-bug build-feature <...>; do
-  if [ -f ".github/prompts/$prompt.prompt.md" ]; then
-    echo "COLLISION: .github/prompts/$prompt.prompt.md already exists"
-  fi
+# For each proposed skill (and any IDE-only prompt-file twin)
+for skill in <project-slug>-engineering investigate-bug build-feature <...>; do
+  [ -f ".github/skills/$skill/SKILL.md" ] && echo "COLLISION: .github/skills/$skill/SKILL.md already exists"
+  [ -f ".github/prompts/$skill.prompt.md" ] && echo "COLLISION: .github/prompts/$skill.prompt.md already exists"
 done
 ```
 
@@ -202,15 +203,17 @@ Verify each `applyTo:` glob matches real files (`find . -path '<glob>'` — shou
 
 Show me each file before saving.
 
-### Step 8 — Create starter prompt files (slash commands)
+### Step 8 — Create starter skills (slash commands on every surface)
 
 Create:
-- `.github/prompts/investigate-bug.prompt.md`
-- `.github/prompts/build-feature.prompt.md`
+- `.github/skills/investigate-bug/SKILL.md`
+- `.github/skills/build-feature/SKILL.md`
 
-Both based on `templates/prompt.md.template`, customized for this project's tech stack and roles.
+Both are Agent Skills (frontmatter `name` + `description`; the directory name equals `name:`), so they load on the cloud agent and the CLI as well as in the IDE. Use the skill structure from `docs/05-INSTRUCTIONS-AND-PROMPTS.md`; the workflow body (steps → Definition of Done) follows `templates/prompt.md.template`. Customize for this project's tech stack and roles.
 
-Optionally create more (`/qa-flow`, `/compliance-review`, `/context-refactor`) if the project needs them.
+Also install the three shipped skills from `<framework path>/templates/skills/` — `commit-push-pr`, `correction-capture`, `verify-build` — as `.github/skills/<name>/SKILL.md`, filling their `<PLACEHOLDERS>` (base branch, build command, build-relevant glob, config files, commit trailer). The router and the quickstart refer to `/commit-push-pr` and `/correction-capture` by name.
+
+Optionally create more (`/qa-flow`, `/compliance-review`, `/context-refactor`) if the project needs them. Only add an IDE-only prompt-file twin (`.github/prompts/<name>.prompt.md`, `templates/prompt.md.template`) for a workflow that is started by hand in the IDE and needs `${input:…}` prompting.
 
 Show me each file before saving.
 
@@ -269,7 +272,7 @@ coverage/
 .vscode/.history
 .idea/workspace.xml
 
-# Vercel/CLI env exports — broader pattern
+# Env-file backups / exports — broader pattern
 .env*.bak*
 .env*staging_tmp
 .env*tmp
@@ -331,7 +334,7 @@ done
 Then ask the user to:
 6. **Reload their IDE** so Copilot picks up the new `.github/` files.
 7. Open Copilot Chat → click the agent dropdown → confirm specialists appear.
-8. Type `/` in Chat → confirm prompt files AND the `<project-slug>-engineering` skill appear in the picker.
+8. Type `/` in Chat → confirm the `<project-slug>-engineering`, `investigate-bug` and `build-feature` skills (and any prompt files) appear in the picker.
 9. Spot-check a previously-working flow to confirm no regression (e.g. existing slash command still works, existing instruction file still loads on its `applyTo:` paths).
 
 Report:

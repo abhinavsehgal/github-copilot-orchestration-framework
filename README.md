@@ -1,6 +1,6 @@
 # GitHub Copilot Orchestration Framework
 
-> **Version 1.2.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
+> **Version 1.2.1** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
 >
 > **v1.2.0 (2026-08-22) — three months of production use, folded back in, and three platform claims retracted.** New chapters: **11 — Project truth, learnings and the evidence ladder** and **12 — Multi-repo workspaces** (web + mobile + microservices across repos, with the `.code-workspace` + manifest + delegation pattern). Nine new pitfalls. **Retracted, because the platform moved:** Copilot *does* have lifecycle hooks now (`.github/hooks/*.json` — chapter 10 is rewritten around them, with five working templates); custom agents *can* invoke custom agents (VS Code `agents:` is an allowlist); and **agent skills** (`.github/skills/`) — not prompt files — are the cross-surface equivalent of Claude Code skills. Every platform claim in v1.2.0 carries a verified-on date.
 >
@@ -32,7 +32,7 @@ Default Copilot is excellent for inline suggestions and quick chat. For complex 
 - **Three-tier docs** — orientation maps for Copilot, canonical refs for humans, frozen archive for history
 - **Path-globbed instruction files** — `.github/instructions/<NAME>.instructions.md` with `applyTo:` glob (auto-loaded when the matching file is being edited)
 
-This framework gives you all of that using Copilot's documented features. No runtime hooks, no external dependencies — just markdown + Copilot's built-in customization mechanisms.
+This framework gives you all of that using Copilot's documented features. No external dependencies — just markdown + Copilot's built-in customization mechanisms (lifecycle hooks are an optional later layer, chapter 10).
 
 ## Copilot customization surfaces this framework uses
 
@@ -69,7 +69,7 @@ github-copilot-orchestration-framework/
 │   ├── 07-FOLDER-STRUCTURE.md            ← three-tier doc organization
 │   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (28 as of v1.2)
 │   ├── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
-│   ├── 10-MECHANICAL-ENFORCEMENT.md      ← (rewritten v1.2) Copilot hooks: the contract, five patterns, eleven design rules
+│   ├── 10-MECHANICAL-ENFORCEMENT.md      ← (rewritten v1.2) Copilot hooks: the contract, five patterns, twelve design rules
 │   ├── 11-PROJECT-TRUTH-AND-LEARNINGS.md ← (v1.2) PROJECT.md / LEARNINGS.md / backlogs, the evidence ladder, the six-gate playbook
 │   └── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
 │
@@ -79,8 +79,8 @@ github-copilot-orchestration-framework/
 │   └── REFINEMENT-PROMPT.md
 │
 └── templates/                            ← drop-in templates with placeholders
-    ├── orchestrator-agent.md.template       ← .github/agents/<project>-orchestrator.md
-    ├── specialist-agent.md.template         ← .github/agents/<specialist>.md
+    ├── orchestrator-agent.md.template       ← .github/agents/<project>-orchestrator.agent.md
+    ├── specialist-agent.md.template         ← .github/agents/<specialist>.agent.md
     ├── review-only-agent.md.template        ← REVIEW-ONLY specialist
     ├── HANDOFF_SCHEMA.md.template           ← docs/ai-context/HANDOFF_SCHEMA.md
     ├── INDEX.md.template                    ← docs/ai-context/INDEX.md
@@ -94,9 +94,11 @@ github-copilot-orchestration-framework/
     ├── commit-push-pr.prompt.md.template      ← (v1.1) IDE-only prompt-file form — superseded by the skill below
     ├── PROJECT.md.template · LEARNINGS.md.template · BACKLOG.md.template · GLOSSARY.md.template   ← (v1.2) the project-truth set
     ├── engineering-playbook-skill.md.template ← (v1.2) six gates + evidence ladder, as .github/skills/<slug>-engineering/SKILL.md
+    ├── skill.md.template                      ← (v1.2) generic agent-skill shape for .github/skills/<name>/SKILL.md
     ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build
     ├── hooks/                                 ← (v1.2) hooks.json + hook-io / correction-detect / doc-freshness-track / lint-fix / stop-gate
     └── workspace/                             ← (v1.2) the multi-repo layer: .code-workspace, manifest, router, orchestrator + 2 specialists, contract instructions, delegate skill + scripts
+        ├── bootstrap.sh.template                 ← (v1.2) creates the whole layer from a filled workspace.json
 ```
 
 ---
@@ -123,7 +125,7 @@ For greenfield, you can skip the inventory step and tell Copilot what specialist
 Set up the GitHub Copilot Orchestration Framework for a new
 <Next.js + Postgres + Stripe> project named "<your-project-name>".
 
-Specialists I want (each becomes .github/agents/<name>.md):
+Specialists I want (each becomes .github/agents/<name>.agent.md):
   - <project-slug>-orchestrator
   - frontend-ui
   - backend-api
@@ -175,7 +177,7 @@ git checkout -b setup/copilot-orchestration
 #    Replace <framework path> with the absolute path to this repo on your machine
 
 # 5. Review/adjust Copilot's proposed inventory + answer Open Questions
-#    INVENTORY scans for existing .github/agents/, /instructions/, /prompts/, /chatmodes/, AGENTS.md
+#    INVENTORY scans for existing .github/agents/, /instructions/, /skills/, /hooks/, /prompts/, /chatmodes/, AGENTS.md
 
 # 6. Paste prompts/BOOTSTRAP-PROMPT.md (in the same Chat session)
 #    BOOTSTRAP runs pre-flight safety checks BEFORE creating any files
@@ -184,7 +186,8 @@ git checkout -b setup/copilot-orchestration
 # 7. Verify in terminal
 ls .github/agents/                # should list your project specialists
 ls .github/instructions/          # should list your path-globbed instructions
-ls .github/prompts/               # should list your prompt files
+ls .github/skills/                # should list the <project-slug>-engineering skill + starter skills
+ls .github/prompts/               # optional IDE-only prompt files, if you created any
 diff .github-pre-bootstrap-backup/copilot-instructions.md .github/copilot-instructions.md  # if existed
 
 # 8. Test in Chat — pick a real task
@@ -192,7 +195,7 @@ diff .github-pre-bootstrap-backup/copilot-instructions.md .github/copilot-instru
 #    Or: type @<project-slug>-orchestrator <your task>
 
 # 9. Commit and PR (note: .github-pre-bootstrap-backup/ is gitignored)
-git add .github/ docs/ai-context/ docs/_archive/ AGENTS.md .gitignore
+git add .github/ docs/ .gitignore            # plus AGENTS.md if you created one
 git commit -m "chore: bootstrap GitHub Copilot orchestration framework"
 git push -u origin setup/copilot-orchestration
 gh pr create --base <your-base-branch> --title "Bootstrap Copilot orchestration framework"
@@ -251,8 +254,8 @@ If you've seen the [Claude Code Orchestration Framework](https://github.com/abhi
 | Concept | Claude Code | GitHub Copilot |
 |---|---|---|
 | Project router | `CLAUDE.md` | `.github/copilot-instructions.md` (or `AGENTS.md` for cross-AI) |
-| Specialists | `.claude/agents/<name>.md` | `.github/agents/<NAME>.md` |
-| Path-globbed rules | `.claude/rules/<name>.md` (with `applies_to:` in body) | `.github/instructions/<NAME>.instructions.md` (with `applyTo:` in frontmatter — direct equivalent, cleaner) |
+| Specialists | `.claude/agents/<name>.md` | `.github/agents/<NAME>.agent.md` |
+| Path-globbed rules | `.claude/rules/<name>.md` (with `paths:` frontmatter — native) | `.github/instructions/<NAME>.instructions.md` (with `applyTo:` frontmatter — direct equivalent) |
 | Repeatable workflows | `.claude/skills/<name>/SKILL.md` | `.github/skills/<name>/SKILL.md` (cross-surface); `.github/prompts/*.prompt.md` is IDE-only |
 | Personas (optional) | n/a | ~~chat modes~~ retired — use `.agent.md` |
 | Tool allowlists | `tools:` field | `tools:` field (same idea, Copilot tool names) |
@@ -270,7 +273,7 @@ Both frameworks share: the bidirectional handoff schema, the universal evidence 
 ## Frequently asked
 
 **Q: Do custom agents work in inline completions?**
-No. Custom agents apply to Chat, Cloud Agent, and (depending on IDE) Edits. Inline completions use only repository-wide instructions (`.github/copilot-instructions.md`) and path-specific instructions (`.github/instructions/`).
+No. Custom agents apply to Chat, Cloud Agent, and (depending on IDE) Edits. Inline completions use only repository-wide instructions (`.github/copilot-instructions.md`) and path-specific instructions (`.github/instructions/`) — the path-specific half is not re-verified; see chapter 6, Mode 1.
 
 **Q: My team uses both VS Code and JetBrains. Will this framework work for both?**
 Yes — the `.github/` files are shared across IDEs. Some features (like prompt files) work identically in VS Code, Visual Studio, JetBrains. The cloud agent on github.com uses the same files plus `target:` field scoping if needed.
@@ -289,6 +292,13 @@ Both, in layers — and not a separate framework. Every repo keeps its own insta
 
 **Q: Can I share this with another engineer who isn't on my team?**
 This repo is public and MIT-licensed. Send the link.
+
+## Companion editions
+
+All three share the handoff schema, the evidence rule, the three-tier docs, the project-truth set and the multi-repo workspace layer; they differ only in the tool's surfaces. Released together on 2026-08-22.
+
+- [`claude-orchestration-framework`](https://github.com/abhinavsehgal/claude-orchestration-framework) v1.2.0 — Claude Code.
+- [`copilot-ios-orchestration-framework`](https://github.com/abhinavsehgal/copilot-ios-orchestration-framework) v1.1.0 — this edition, pre-filled for native iOS.
 
 ## License
 

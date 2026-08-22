@@ -6,7 +6,7 @@ Paste this into Copilot Chat at the root of the project you want to bootstrap. A
 
 I want to adopt the GitHub Copilot Orchestration Framework on this project. Before we generate any files, do a read-only inventory.
 
-The framework lives at `<framework path>` (default: `/Users/<you>/Desktop/github-copilot-orchestration-framework/`). Read `docs/01-PRINCIPLES.md`, `docs/02-ARCHITECTURE.md`, and `docs/03-AGENTS-GUIDE.md` from there before answering. Do not modify any files in this project yet.
+The framework lives at `<framework path>` (`~/frameworks/copilot` if you followed `docs/00-QUICKSTART.md`). Read `docs/01-PRINCIPLES.md`, `docs/02-ARCHITECTURE.md`, and `docs/03-AGENTS-GUIDE.md` from there before answering. Do not modify any files in this project yet.
 
 ## ⚠ Two universal rules for this entire pass
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Manifest for a multi-repo workspace (docs/12-MULTI-REPO-WORKSPACES.md). The clones under `path` are gitignored and disposable; this file is the source of truth for WHICH repos belong and HOW to delegate to each. Never point `orchestrator` at an agent that does not exist in that repo's .claude/agents/.",
+  "_comment": "Manifest for a multi-repo workspace (docs/12-MULTI-REPO-WORKSPACES.md). The clones under `path` are gitignored and disposable; this file is the source of truth for WHICH repos belong and HOW to delegate to each. Never point `orchestrator` at an agent that does not exist in that repo's .github/agents/.",
   "name": "<WORKSPACE_SLUG>",
   "repos": [
     {

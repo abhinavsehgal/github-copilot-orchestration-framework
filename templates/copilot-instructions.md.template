@@ -18,7 +18,7 @@
 8. **Multi-agent handoffs use a structured schema** — see `docs/ai-context/HANDOFF_SCHEMA.md`. The `@<PROJECT_SLUG>-orchestrator` agent emits outbound `handoff:` YAML; specialists return `return:` YAML. **No evidence, no claim.**
 9. **Corrections harden into instruction files.** If the owner corrected a *recurring* pattern this turn, end the turn by drafting a one-line patch to the right `.github/instructions/<domain>.instructions.md` and ask for approval. Never say "I'll remember" — any memory the IDE or CLI keeps is machine-local and invisible to every other agent and teammate.
 10. **Deferred work must be written, not spoken.** Any "later" / follow-up / known gap named in a summary is appended to `docs/<AREA>_BACKLOG.md` (what / why / effort / revisit-when) before the turn ends.
-11. **Every production push freshens the docs — same turn, no exceptions.** `<CHANGELOG_PATH>` (the anchor), the affected orientation map(s), the affected instruction files, and `docs/ai-context/PROJECT.md` §3 if the production state changed. (Enforced by the `agentStop` doc-freshness hook if `.github/hooks/` is installed — see `docs/ai-context/HOOKS.md`.)
+11. **Every production push freshens the docs — same turn, no exceptions.** `<CHANGELOG_PATH>` (the anchor), the affected orientation map(s), the affected instruction files, and `docs/ai-context/PROJECT.md` §3 if the production state changed. (Enforced by the `agentStop` doc-freshness hook if `.github/hooks/` is installed.)
 12. **One name per concept.** `docs/ai-context/GLOSSARY.md` is a rule file; adding a new name for an existing concept is a defect.
 
 ## Mandatory workflow (every non-trivial task)
@@ -78,13 +78,15 @@
 - `/compliance-review` — compliance review (flagger only, never approver)
 - `/context-refactor` — keep `.github/` and `docs/` tidy
 - `/commit-push-pr` — validate → commit → push → PR against `<DEFAULT_DEV_BRANCH>`
+- `/correction-capture` — turn an owner correction into an instruction-file patch (never "I'll remember")
+- `/verify-build` — run the build and report the real result before any "done" claim
 
 (Prompt files under `.github/prompts/` are IDE-only; a workflow the cloud agent or CLI must run lives under `.github/skills/`.)
 
 ## Reference docs (canonical — don't duplicate; link to them)
 
 - Current truth: `docs/ai-context/PROJECT.md` · Learnings: `docs/ai-context/LEARNINGS.md` · Backlogs: `docs/<AREA>_BACKLOG.md`
-- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md` · What is enforced mechanically: `docs/ai-context/HOOKS.md`
+- Multi-agent handoff schema: `docs/ai-context/HANDOFF_SCHEMA.md` · What is enforced mechanically: `.github/hooks/*.json` (if installed)
 - Architecture: `docs/ARCHITECTURE.md`
 - API reference: `docs/API.md`
 - Tech stack: `docs/TECH_STACK.md`

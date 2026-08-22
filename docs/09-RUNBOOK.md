@@ -1,6 +1,6 @@
-# 09 — Runbook
+# 09 — Runbook: Bootstrap a New Project
 
-> **v1.2.0 additions to this runbook:** after the specialists and instruction files exist, BOOTSTRAP Step 13 generates the project-truth set (`docs/ai-context/PROJECT.md`, `LEARNINGS.md`, `GLOSSARY.md`, the `<slug>-engineering` skill under `.github/skills/`, one backlog) — Chapter 11. Repeatable workflows are now **skills** (`.github/skills/<name>/SKILL.md`, cross-surface); prompt files are IDE-only. Hooks (`.github/hooks/*.json`) are a later hardening phase — Chapter 10. Multi-repo setups — Chapter 12.: Bootstrap a New Project
+> **v1.2.0 additions to this runbook:** after the specialists and instruction files exist, BOOTSTRAP Step 13 generates the project-truth set (`docs/ai-context/PROJECT.md`, `LEARNINGS.md`, `GLOSSARY.md`, the `<slug>-engineering` skill under `.github/skills/`, one backlog) — Chapter 11. Repeatable workflows are now **skills** (`.github/skills/<name>/SKILL.md`, cross-surface); prompt files are IDE-only. Hooks (`.github/hooks/*.json`) are a later hardening phase — Chapter 10. Multi-repo setups — Chapter 12. The short form of Phases 1–7 is `docs/00-QUICKSTART.md` Part 2.
 
 Step-by-step guide for adopting this framework on a real codebase using GitHub Copilot. Plan for ~2-4 hours of focused work.
 
@@ -8,9 +8,9 @@ Step-by-step guide for adopting this framework on a real codebase using GitHub C
 
 - **GitHub Copilot subscription** (Individual / Business / Enterprise) and signed in
 - **Copilot extension** installed in your IDE (VS Code / Visual Studio / JetBrains / Eclipse / Xcode)
-- **Recent extension version** that supports custom agents (`.github/agents/*.md`)
+- **Recent extension version** that supports custom agents (`.github/agents/*.agent.md`)
 - **Git** installed; **GitHub CLI** (`gh`) optional for PR creation
-- **Read access** to this framework at `~/Desktop/github-copilot-orchestration-framework/`
+- **Read access** to this framework on your disk (`<framework path>` — `~/frameworks/copilot` if you followed the quickstart)
 - **2-4 hours** of focused time
 
 ## Phase 0 — Decide if you need this framework (10 min)
@@ -48,15 +48,15 @@ You answer: confirm/adjust the proposed specialist list.
 In the same Copilot Chat session, paste `prompts/BOOTSTRAP-PROMPT.md`. Reference this framework's path so Copilot can read templates:
 
 ```
-The framework lives at /Users/<you>/Desktop/github-copilot-orchestration-framework/.
+The framework lives at <framework path>.
 Read templates from there. Customize for this project: <project-name>.
 ```
 
 Copilot will:
-1. Create `.github/agents/<project>-orchestrator.md` from the orchestrator template
+1. Create `.github/agents/<project>-orchestrator.agent.md` from the orchestrator template
 2. Create one `.github/agents/<specialist>.agent.md` per specialist
 3. Create `.github/instructions/<domain>.instructions.md` files (with `applyTo:` globs)
-4. Create `.github/prompts/investigate-bug.prompt.md` and `.github/prompts/build-feature.prompt.md` from skill templates
+4. Create the starter skills `.github/skills/investigate-bug/SKILL.md` and `.github/skills/build-feature/SKILL.md`, and install the shipped `commit-push-pr`, `correction-capture`, `verify-build` skills (cross-surface; IDE-only prompt-file twins are optional)
 5. Create `docs/ai-context/HANDOFF_SCHEMA.md`
 6. Create `docs/ai-context/INDEX.md` with task → docs map
 7. Create `docs/ai-context/ORCHESTRATION_SPOONFEEDER.md`
@@ -64,6 +64,7 @@ Copilot will:
 9. Create `.github/copilot-instructions.md` (the router)
 10. Create `docs/_archive/README.md`
 11. Update `.gitignore`
+12. Create the project-truth set (BOOTSTRAP Step 13): `docs/ai-context/PROJECT.md`, `LEARNINGS.md`, `GLOSSARY.md`, `.github/skills/<project-slug>-engineering/SKILL.md`, one `docs/<AREA>_BACKLOG.md`
 
 Verify each file before saving.
 
@@ -96,24 +97,26 @@ Common instruction files to start with:
 
 Aim for **3-5 rules per file** at first.
 
-## Phase 4 — Add 1-2 starter prompt files (20 min)
+## Phase 4 — Check the 1-2 starter skills (20 min)
 
-Most projects benefit from at least these:
-- `.github/prompts/investigate-bug.prompt.md`
-- `.github/prompts/build-feature.prompt.md`
+Most projects benefit from at least these (BOOTSTRAP Step 8 creates them; verify or ask for them here):
+- `.github/skills/investigate-bug/SKILL.md`
+- `.github/skills/build-feature/SKILL.md`
 
 Ask Copilot:
 
 ```
-Create .github/prompts/investigate-bug.prompt.md and
-.github/prompts/build-feature.prompt.md based on
-templates/prompt.md.template, customized for this project's
-tech stack and roles.
+Create .github/skills/investigate-bug/SKILL.md and
+.github/skills/build-feature/SKILL.md using the skill structure in
+docs/05-INSTRUCTIONS-AND-PROMPTS.md (frontmatter `name` + `description`;
+the workflow body follows templates/prompt.md.template), customized for
+this project's tech stack and roles.
 
-These should be invokable via /investigate-bug and /build-feature in Chat.
+These should be invokable via /investigate-bug and /build-feature on every
+surface (IDE chat, cloud agent, CLI).
 ```
 
-You can add more prompt files later (qa-flow, compliance-review, audit-pipeline, context-refactor).
+You can add more skills later (qa-flow, compliance-review, audit-pipeline, context-refactor). A prompt file (`.github/prompts/*.prompt.md`) is only for a workflow you start by hand in the IDE and that needs `${input:…}` prompting.
 
 ## Phase 5 — Verify (15 min)
 
@@ -123,11 +126,12 @@ Run these checks:
 # 1. Files in expected locations
 ls .github/agents/
 ls .github/instructions/
-ls .github/prompts/
+ls .github/skills/
+ls .github/prompts/      # only if you created IDE-only prompt files
 ls docs/ai-context/
 
 # 2. Doc-link sweep — find broken refs
-grep -rohE "(docs|\.github)/[A-Za-z0-9_./-]+\.md" .github/copilot-instructions.md docs/ .github/agents/ .github/instructions/ .github/prompts/ 2>/dev/null | sort -u | while read p; do [ -f "$p" ] || echo "BROKEN: $p"; done
+grep -rohE "(docs|\.github)/[A-Za-z0-9_./-]+\.md" .github/copilot-instructions.md docs/ .github/agents/ .github/instructions/ .github/skills/ .github/prompts/ 2>/dev/null | sort -u | while read p; do [ -f "$p" ] || echo "BROKEN: $p"; done
 
 # 3. Build still passes (whatever your build command is)
 npm run build  # or: pytest, go build, cargo build, etc.
@@ -136,7 +140,7 @@ npm run build  # or: pytest, go build, cargo build, etc.
 In your IDE:
 4. **Reload the IDE** so Copilot picks up the new `.github/` files.
 5. Open Copilot Chat → click the agent dropdown → confirm your specialists appear in the list.
-6. Type `/` in Chat → confirm your prompt files appear in the picker.
+6. Type `/` in Chat → confirm your skills (and any prompt files) appear in the picker.
 
 Fix any breakage before moving on. Common issues:
 - Agent file YAML invalid (it won't appear in the dropdown)
@@ -162,7 +166,16 @@ If anything is off → tighten the relevant agent's body. Common fixes:
 - Specialist accepting vague delegations → tighten its "incoming handoff validation" section
 - Specialist not running tests → add explicit "tests_run MUST be non-empty" to its Definition of Done
 
-## Phase 7 — Document for your team (20 min)
+## Phase 7 — Commit, open a PR, and document for your team (20 min)
+
+Commit on the setup branch and open a PR (`.github-pre-bootstrap-backup/` stays gitignored):
+
+```bash
+git add .github/ docs/ .gitignore
+git commit -m "chore: bootstrap Copilot orchestration framework"
+git push -u origin setup/copilot-orchestration
+gh pr create --base <your-base-branch> --title "Bootstrap Copilot orchestration"
+```
 
 Add to your project's existing onboarding docs:
 - "We use GitHub Copilot with a custom orchestration setup. See `docs/ai-context/ORCHESTRATION_SPOONFEEDER.md`."
@@ -194,7 +207,7 @@ If code review is over-applying instructions (e.g. flagging style preferences), 
 ## Phase 9 — Quarterly maintenance
 
 Every 3 months, dedicate a session to:
-1. Run the `context-refactor` prompt (or have the `context-librarian` specialist do a sweep)
+1. Run `prompts/REFINEMENT-PROMPT.md` (and the `/context-refactor` skill, or have the `context-librarian` specialist do a sweep)
 2. Move stale dated reports to `docs/_archive/<YYYY-MM>/`
 3. Reconcile any instruction conflicts
 4. Update orientation maps for areas where reality has drifted
@@ -221,7 +234,7 @@ Every 3 months, dedicate a session to:
 You have:
 - A `<project>-orchestrator` and 4-10 specialists in `.github/agents/`
 - 3-5 path-globbed instruction files in `.github/instructions/`
-- 2-4 prompt files (slash commands) in `.github/prompts/`
+- 2-4 skills (slash commands on every surface) in `.github/skills/`, plus the `<project-slug>-engineering` playbook skill; optional IDE-only prompt files in `.github/prompts/`
 - Three-tier docs (orientation maps + canonical refs + archive)
 - A team that knows how to pick invocation modes
 - Auditable handoffs for every cross-domain task

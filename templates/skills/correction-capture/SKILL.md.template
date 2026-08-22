@@ -13,7 +13,7 @@ description: After the user corrects the assistant, decide whether the lesson is
 
 ## When to invoke
 
-- The user just corrected a mistake on a recurring domain pattern (e.g. "you used `next/image` for an avatar again — please use `<img>` with `resolveAvatarSrc`")
+- The user just corrected a mistake on a recurring domain pattern (e.g. "you derived the status label inline again — please go through the shared `displayStatus()` helper")
 - The user said "I told you", "you forgot", "stop doing X", "instead of X use Y", "again", "you keep doing this", or similar explicit-correction phrasing
 - A code review surfaced a pattern that wasn't caught by the existing `.github/instructions/*` files
 
@@ -21,13 +21,13 @@ description: After the user corrects the assistant, decide whether the lesson is
 
 - The correction was a one-off context-specific request ("for this file, use Y" — not a recurring rule)
 - The correction was about a typo or minor wording — those don't need to harden into instructions
-- The "rule" already exists in an `.github/instructions/*.instructions.md` file — instead, run `/inventory` to find the existing rule and ask why it didn't apply
+- The "rule" already exists in an `.github/instructions/*.instructions.md` file — instead, grep `.github/instructions/` for the existing rule and ask why it didn't apply (wrong `applyTo:` glob is the usual answer)
 
-## Inputs
+## Inputs (gather from the conversation — skills have no `${input:…}` prompting; that is a prompt-file feature)
 
-- `${input:correction:What did the user just correct? Quote their exact words.}`
-- `${input:violated_pattern:What pattern did the assistant violate? (e.g. "used next/image for an avatar")}`
-- `${input:scope:Which files/paths does this pattern apply to? (used to set the applyTo: glob)}`
+- **correction** — what did the user just correct? Quote their exact words.
+- **violated_pattern** — what pattern did the assistant violate? (e.g. "derived the status label inline instead of using the shared helper")
+- **scope** — which files/paths does this pattern apply to? (used to set the `applyTo:` glob)
 
 ## Workflow
 
@@ -102,12 +102,12 @@ Wait for user approval. Do NOT silently apply patches to instruction files witho
 ## Hard NOs
 
 - Never silently apply an instruction-file patch without explicit user `yes`
-- Never patch a file that has > 3,000 chars (Copilot code-review reads only the first 4,000) without first showing the user the line count and asking whether to split into a separate file
+- Never patch an instruction file that is already long (current guidance ≈1,000 lines max / about two pages) without first showing the user the line count and asking whether to split into a separate file
 - Never overwrite or rewrite an existing instruction without preserving its history (additions only, unless the user explicitly accepts a rewrite)
 - Never use the words "I'll remember" / "I'll keep that in mind" / "noted" — replace with the patch or with explicit "this isn't a recurring rule, declining to codify"
 
 ## Cross-links
 
-- `docs/10-MECHANICAL-ENFORCEMENT.md` — why this prompt exists in lieu of a Copilot Stop hook
-- `docs/05-INSTRUCTIONS-AND-PROMPTS.md` — the `applyTo:` glob conventions
-- `templates/instructions.md.template` — the file shape this prompt patches into
+- Framework chapter 10 (`docs/10-MECHANICAL-ENFORCEMENT.md` in the framework repo) — Pattern 2, the `userPromptSubmitted` + `agentStop` hooks that trigger this skill automatically; the skill is the hook-less / manual path
+- Framework chapter 5 (`docs/05-INSTRUCTIONS-AND-PROMPTS.md`) — the `applyTo:` glob conventions
+- `.github/instructions/*.instructions.md` — the files this skill patches into (shape: framework `templates/instructions.md.template`)

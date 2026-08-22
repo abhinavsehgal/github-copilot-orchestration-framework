@@ -11,6 +11,7 @@
 3. Read ONLY the listed docs (they are 50–150 lines each).
 4. If the task is medium/complex, hand it to `@<PROJECT_SLUG>-orchestrator` (it picks the rest).
 5. **Path-matching `.github/instructions/*.instructions.md` files auto-load when you edit matching files. Verify they loaded.**
+6. Repeatable workflows are skills (`.github/skills/<name>/SKILL.md`, `/<name>` on every surface; prompt files under `.github/prompts/` are IDE-only). Mechanical gates, if installed, live in `.github/hooks/*.json`.
 
 ---
 
@@ -46,14 +47,14 @@
 ### Example 2 — "<COMMON_FEATURE_REQUEST_FOR_YOUR_PROJECT>"
 
 1. Read `<orientation-map-1>.md` + `<orientation-map-2>.md`.
-2. Use prompt file: `/build-feature` in Copilot Chat.
+2. Use the `/build-feature` skill in Copilot Chat.
 3. Agent: `@product-flow` (acceptance criteria) → topic specialists.
 
 ### Example 3 — "<COMMON_AUDIT_PATTERN_FOR_YOUR_PROJECT>"
 
 1. Read `<orientation-map>.md`.
 2. Instructions auto-load when reviewing matching paths.
-3. Use prompt file: `/compliance-review`.
+3. Use the `/compliance-review` skill.
 4. Agent: `@<audit-specialist-name>`.
 
 ---
