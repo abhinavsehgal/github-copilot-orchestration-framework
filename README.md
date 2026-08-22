@@ -54,7 +54,8 @@ github-copilot-orchestration-framework/
 ├── GitHub-Copilot-Orchestration-Framework.pdf   ← consolidated printable
 ├── LICENSE
 │
-├── docs/                                 ← framework documentation (10 chapters)
+├── docs/                                 ← framework documentation
+│   ├── 00-QUICKSTART.md                  ← START HERE: step-by-step onboarding for any project, incl. many repos (VS Code + CLI)
 │   ├── 01-PRINCIPLES.md                  ← seven core principles
 │   ├── 02-ARCHITECTURE.md                ← .github/ layout (instructions / agents / skills / hooks / prompts; chat modes retired)
 │   ├── 03-AGENTS-GUIDE.md                ← how to design orchestrator + specialists for Copilot
@@ -199,7 +200,7 @@ Estimated time: **2-4 hours** (split across phases — see `docs/09-RUNBOOK.md`)
 
 Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — self-contained **as of v1.1.2**; it predates the v1.2 hooks rewrite and chapters 11–12 (regenerate is tracked in the changelog). Or browse the markdown files in `docs/` for clickable cross-links.
 
-The most actionable single chapter is **`docs/09-RUNBOOK.md`**.
+The most actionable single chapter is **`docs/00-QUICKSTART.md`** — every step with *what / why / paste this / you know it worked when*, through the multi-repo workspace. `docs/09-RUNBOOK.md` is its long form.
 
 ---
 
