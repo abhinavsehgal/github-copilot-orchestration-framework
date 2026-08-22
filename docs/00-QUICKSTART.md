@@ -382,7 +382,7 @@ remove `total`. If it just did the rename, the contract rule is not loading — 
 
 ## Cross-links
 
-- `docs/00-QUICKSTART.html` — this guide plus the other two editions as one offline page with tabs (open in a browser; generated from the three `00-QUICKSTART.md` files on 2026-08-22).
+- https://abhinavsehgal.github.io/github-copilot-orchestration-framework/ (GitHub Pages) or `docs/00-QUICKSTART.html` offline — this guide plus the other two editions as one page with tabs (open in a browser; generated from the three `00-QUICKSTART.md` files on 2026-08-22).
 
 - `docs/09-RUNBOOK.md` — the long version of Part 2.
 - `docs/10-MECHANICAL-ENFORCEMENT.md` — hooks (Part 2 step 7).
