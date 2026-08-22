@@ -18,7 +18,7 @@
    ├── .github/instructions/*.instructions.md ── path-globbed (auto-load when editing matching files)
    ├── .github/agents/*.md ─────────────── orchestrator + specialists
    ├── .github/prompts/*.prompt.md ─────── slash-command workflows
-   └── .github/chatmodes/*.chatmode.md ──── (optional) older persona format
+   └── .github/skills/<name>/SKILL.md ───── repeatable workflows (cross-surface; prompt files are IDE-only)
 ```
 
 **The big idea.** Tiny `.github/copilot-instructions.md` as router. Every task picks only the docs/agents/instructions it needs. Specialist agents do focused work. The orchestrator dispatches.
@@ -36,7 +36,7 @@
 | Orientation maps | `docs/ai-context/<area>.md` | 50–150 lines each. Tool-agnostic. |
 | Canonical docs | `docs/<UPPERCASE>.md` | Untouched. Full detail. |
 | Path-globbed instructions | `.github/instructions/<domain>.instructions.md` | Auto-loaded by Copilot when editing files matching `applyTo:` glob. |
-| Specialist agents | `.github/agents/<name>.md` | One purpose each. Bounded by "I CAN" / "I CANNOT" lists + `tools:` allowlist. |
+| Specialist agents | `.github/agents/<name>.agent.md` | One purpose each. Bounded by "I CAN" / "I CANNOT" lists + `tools:` allowlist. |
 | Orchestrator | `.github/agents/<PROJECT_SLUG>-orchestrator.md` | Manager agent. Picks specialists per task. |
 | Prompt files (slash commands) | `.github/prompts/<workflow>.prompt.md` | Repeatable workflows. Invoke via `/<workflow>` in Chat. |
 

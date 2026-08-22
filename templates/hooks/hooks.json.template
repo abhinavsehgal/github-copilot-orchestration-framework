@@ -1,0 +1,16 @@
+{
+  "_comment": "Copy to .github/hooks/framework.json (COMMIT it — the cloud agent reads only .github/hooks/*.json). Scripts go to .github/scripts/. State file lives in .github/hooks/.state/ (add to .gitignore). Contract: docs/10-MECHANICAL-ENFORCEMENT.md. Timeouts fail OPEN — size them to the slowest honest run.",
+  "version": 1,
+  "hooks": {
+    "userPromptSubmitted": [
+      { "type": "command", "bash": "node .github/scripts/correction-detect.mjs", "timeoutSec": 10 }
+    ],
+    "postToolUse": [
+      { "type": "command", "bash": "node .github/scripts/doc-freshness-track.mjs", "timeoutSec": 10 },
+      { "type": "command", "bash": "node .github/scripts/lint-fix.mjs", "timeoutSec": 60 }
+    ],
+    "agentStop": [
+      { "type": "command", "bash": "node .github/scripts/stop-gate.mjs", "timeoutSec": 900 }
+    ]
+  }
+}

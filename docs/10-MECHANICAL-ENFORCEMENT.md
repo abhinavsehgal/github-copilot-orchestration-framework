@@ -1,191 +1,190 @@
-# 10 — Mechanical Enforcement Patterns
+# 10 — Mechanical Enforcement (hooks, skills, and what still needs discipline)
 
-GitHub Copilot does not expose programmable lifecycle hooks (no equivalent of Claude Code's `PreToolUse` / `PostToolUse` / `Stop`). What it has instead is **declarative auto-loading via `applyTo:` frontmatter** — which already covers the most important of the four hook patterns from the Claude side: rule surfacing.
+> **Rewritten for v1.2.0.** The v1.1 version of this chapter opened with *"GitHub Copilot does not
+> expose programmable lifecycle hooks."* That was true when written and is false now: Copilot has
+> hooks on the cloud agent, the Copilot CLI and VS Code. Every platform fact below was verified
+> against the official hooks reference and the VS Code hooks page on **2026-08-22**. Re-verify
+> quarterly (Pitfall 20 — the platform moves under your conventions).
 
-This chapter:
-
-1. Maps the Claude Code hook patterns onto Copilot's surface area, calling out which translate cleanly and which don't.
-2. Provides ready-to-paste `.github/prompts/*.prompt.md` templates for the patterns that DO translate (correction-capture, commit-push-pr).
-3. Explains how the orchestrator's Definition of Done section can carry the build-gate enforcement that has no native trigger.
-
-Read after `docs/05-INSTRUCTIONS-AND-PROMPTS.md` (which covers the basic mechanics of `applyTo:` and prompt files).
-
-This chapter is **optional**. Skip it if your project hasn't yet experienced documentation discipline failing in real-world use. Come back when concrete evidence shows agents are skipping rules, corrections aren't hardening, or builds are landing broken.
+This chapter is **optional**. Skip it until you have concrete evidence that documentation
+discipline is being skipped under real-world pressure (the same triggers as the Claude edition:
+the same correction repeated across sessions, bugs shipping despite a rule that forbade them,
+builds skipped on commits, a production push with stale docs behind it). Then come back.
 
 ---
 
-## Translation table — Claude Code hook patterns → Copilot equivalents
+## What Copilot actually offers (verified 2026-08-22)
 
-| Claude Code pattern | Copilot equivalent | Translation quality |
+| Surface | Mechanism | Where |
 |---|---|---|
-| `PreToolUse` rule-surfacing (auto-inject matching rule body before edit) | `.github/instructions/<NAME>.instructions.md` with `applyTo:` glob | **Native and strict.** Copilot auto-loads matching instruction files when editing matching paths. This is built into the platform — no scripting required. The framework's existing `instructions.md.template` IS this pattern. |
-| `Stop` correction-capture (block stop + draft rule patch when user corrects) | `.github/prompts/correction-capture.prompt.md` (manual workflow) | **Partial.** Copilot has no Stop event, so the workflow must be invoked explicitly. The prompt template below codifies the same checklist for use after a correction. |
-| `Stop` build-gate (run build before stop; block if broken) | Orchestrator's Definition of Done + `.github/prompts/verify-build.prompt.md` | **Partial.** No automatic trigger. Enforcement lives in the agent's instructions ("the build must be green before claiming done") and in a prompt the orchestrator runs as the last step. |
-| `PostToolUse` lint-fix (auto-fix linter after every edit) | IDE auto-fix on save / pre-commit hook | **Out of scope.** This belongs in the IDE config or in a Husky/lint-staged pre-commit, not in Copilot's surface area. |
-| `/commit-push-pr` slash command (daily commit→PR loop) | `.github/prompts/commit-push-pr.prompt.md` | **Native.** Slash prompts in Copilot map 1:1 to slash commands in Claude Code. |
+| Declarative rule loading | `.github/instructions/*.instructions.md` with `applyTo:` globs — auto-loaded when a matching file is in play | All surfaces |
+| Lifecycle hooks | `.github/hooks/*.json` — events `sessionStart`, `sessionEnd`, `userPromptSubmitted`, `preToolUse`, `postToolUse`, `postToolUseFailure`, `agentStop`, `subagentStart`, `subagentStop`, `errorOccurred`, `preCompact`, `permissionRequest`, `notification` | Cloud agent (reads only `.github/hooks/*.json`; `bash`/`command` fields only) · Copilot CLI (all events; also `~/.copilot/hooks/`) · VS Code (reads `.github/hooks/*.json` **and** a Claude-style `.claude/settings.json`) |
+| Skills | `.github/skills/<name>/SKILL.md` — invoked as `/name` or auto-loaded by relevance | Cloud agent, code review, CLI, VS Code, JetBrains |
+| Prompt files | `.github/prompts/*.prompt.md` | IDEs only — not the cloud agent, not the CLI |
 
-The takeaway: Copilot's design favours declarative auto-loading over imperative event hooks. Two of the four patterns translate cleanly; one is partial; one belongs elsewhere on the stack.
+### The hook contract (the part you must get right)
 
----
-
-## Pattern 1 — Rule surfacing (already in the framework)
-
-The `templates/instructions.md.template` you got at install IS this pattern. Recap:
-
-```yaml
----
-applyTo: "src/components/**/*.tsx,src/lib/avatars.ts"
----
-
-# Frontend / UI Instructions
-
-## Hard rules
-
-### Always use `<img>` + `resolveAvatarSrc` for `profile.avatar` — never `next/image`
-
-**Why:** ...
-
-**How to apply:** ...
+```json
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse":  [ { "type": "command", "bash": "node .github/scripts/pre-tool.mjs",  "timeoutSec": 10 } ],
+    "postToolUse": [ { "type": "command", "bash": "node .github/scripts/post-tool.mjs", "timeoutSec": 30 } ],
+    "agentStop":   [ { "type": "command", "bash": "node .github/scripts/stop-gate.mjs", "timeoutSec": 600 } ]
+  }
+}
 ```
 
-When a developer (or Copilot's autonomous agent) edits any matching file, Copilot auto-loads the instruction body into context. **No script. No hook. No restart.** This is what makes Copilot's instructions surface qualitatively different from Claude Code's static `CLAUDE.md` — the auto-loading is built into the platform.
+- **Input:** JSON on stdin. `agentStop` receives `session_id`, `cwd`, `transcript_path`,
+  `stop_reason`, `stop_hook_active`. `preToolUse` / `postToolUse` receive `tool_name`,
+  `tool_input` (and `tool_result` after). `userPromptSubmitted` receives `prompt`. Field names
+  also arrive camelCase on some surfaces (`sessionId`, `toolName`, `transcriptPath`) — read both.
+- **Output:** JSON on **stdout**. `preToolUse` → `{"permissionDecision": "allow|deny|ask",
+  "permissionDecisionReason": "…"}`; `agentStop` → `{"decision": "block", "reason": "…"}` to
+  force another turn; `postToolUse` → `{"additionalContext": "…"}`.
+- **Exit codes:** `0` = parse stdout. For `preToolUse`, `2` and any other non-zero = **deny**
+  (fail-closed). For other events a non-zero exit is a warning; `stderr` is shown to the user and the
+  run continues.
+- **Timeouts always fail OPEN**, whatever the event. A gate that needs to *block* must finish inside
+  `timeoutSec` or it silently allows. Size the timeout to the slowest honest run and, inside the
+  script, treat your own internal timeout as *inconclusive* (Rule 9 below).
+- **Loop guard:** `agentStop` passes `stop_hook_active: true` on the forced continuation. Exit
+  `{"decision":"allow"}` when you see it, or you trap the agent.
 
-What you DO need to discipline:
-
-- Keep instruction files ≤ 150 lines / ~3,000 chars (Copilot code-review reads only the first ~4,000 chars)
-- Use `applyTo:` globs that actually match the files being edited (verify by grepping your codebase against each glob)
-- Front-load code-review-relevant rules (per the 4,000-char cap)
-- Have a `context-librarian` specialist whose job includes auditing instruction `applyTo:` overlap quarterly
-
----
-
-## Pattern 2 — Correction-capture (manual prompt)
-
-In Claude Code, a Stop hook can detect strong correction signals in the user's message and force a rule patch. Copilot has no Stop event, so the equivalent is a **prompt the developer (or orchestrator) invokes explicitly after a correction**.
-
-A template ships at `templates/correction-capture.prompt.md.template`. Copy it to `.github/prompts/correction-capture.prompt.md` in your project. After any correction that feels like a recurring pattern, type:
-
-```
-/correction-capture
-```
-
-The prompt walks Copilot through the same 3-step checklist the Claude `Stop` hook auto-injects:
-1. Was this a correction on a recurring domain pattern?
-2. If yes — draft a one-line `.github/instructions/<file>.instructions.md` patch under "Hard rules" or "What NOT to do." Name the exact file. Get user approval.
-3. If no — acknowledge briefly.
-
-The discipline is "no `I'll remember`, only patches." Memory is not a substitute for an instruction file.
-
-The prompt is opt-in (the user types it) rather than opt-out (a hook fires automatically). That's the platform's reality. The trade-off:
-
-- ✅ No false positives from regex misfires
-- ✅ Works the same across every Copilot surface (VS Code, JetBrains, Cloud Agent, CLI)
-- ❌ Requires the developer to remember to invoke it
-- ❌ Easier to skip than the Claude Code Stop hook
-
-To minimize the discipline cost, encode the `correction-capture` invocation step into your orchestrator agent's "incoming feedback" instructions: "if the user issues a correction, immediately run the `correction-capture` prompt before continuing."
+This contract differs from Claude Code's in two ways that matter if you run both editions: the
+reminder goes on **stdout as JSON** (Claude: stderr as text), and `preToolUse` is **fail-closed**
+(Claude: fail-silent). Do not copy a hook script between the two without re-reading this table.
 
 ---
 
-## Pattern 3 — Build-gate (orchestrator Definition of Done)
+## Translation table — the five patterns on Copilot's surface
 
-Copilot has no Stop hook, but every specialist agent's Definition of Done can include a "build is green" requirement. The orchestrator enforces this on receipt of a `return:` block — if `tests_run` doesn't include the build command and its result, the orchestrator pushes back instead of proceeding.
+| Pattern | Copilot mechanism | Quality |
+|---|---|---|
+| 1 Rule-surfacing (load matching rules before an edit) | **Native.** `applyTo:` on instruction files. No script. | Strict |
+| 2 Correction-capture (a correction must become an instruction-file patch) | `userPromptSubmitted` hook detects the correction signal and writes a flag file; `agentStop` hook blocks the stop while the flag exists | Native (v1.2) — previously a manual `/correction-capture` prompt; keep the prompt for IDEs without hooks |
+| 3 Build-gate (no stop with build-relevant files dirty and a failing build) | `agentStop` hook runs the build; `{"decision":"block"}` on a real failure; timeout = inconclusive | Native (v1.2) — plus Definition-of-Done discipline as before |
+| 4 Lint-fix after edit | `postToolUse` hook on edit tools, or editor format-on-save / pre-commit | Native (v1.2); IDE config still preferred |
+| 5 Doc-freshness gate (a production push must be followed by a changelog edit in the same session) | `postToolUse` hook records the last push and the last changelog edit in a state file; `agentStop` blocks when push > changelog | Native (v1.2) |
+| `/commit-push-pr` daily workflow | `.github/skills/commit-push-pr/SKILL.md` (works on every surface; the v1.1 prompt-file version is IDE-only) | Native |
 
-Concrete enforcement:
+Templates for all of these ship at `templates/hooks/` (Copilot JSON contract) and
+`templates/skills/`. Each script is stack-agnostic with `<UPPERCASE>` placeholders for the build
+command, changelog path and protected branch.
 
-1. **In the orchestrator's incoming-validation step** (per `docs/04-HANDOFF-SCHEMA.md`):
-   ```yaml
-   - if return.status == "completed" but tests_run does not include `npm run build` (or your project's build command), reject with status: incomplete
-   ```
+### Why the flag-file design instead of parsing the transcript
 
-2. **In every implementation specialist's Definition of Done section:**
-   ```markdown
-   ## Definition of Done
-   1. ...
-   N. Run the build: `npm run build`. Include the command + result in `tests_run`. Fail the handoff if the build doesn't pass.
-   ```
-
-3. **As a `/verify-build.prompt.md`** the orchestrator can invoke explicitly when in doubt:
-   ```
-   /verify-build
-   ```
-   Walks Copilot through running the build, capturing the output tail, and refusing to mark the parent task done if it fails.
-
-The pattern relies on the orchestrator catching the violation on the return path rather than on a runtime trigger. Less mechanical than the Claude Code Stop hook, but enforceable as long as the orchestrator's validation step is taken seriously.
+Claude Code's Stop hooks parse the session transcript (a documented JSONL format). Copilot's
+`agentStop` also hands you a `transcript_path`, but its format is not documented in the hooks
+reference and may differ per surface. The templates therefore never parse it: `userPromptSubmitted`
+and `postToolUse` see the events directly and record what the `agentStop` gate needs in a small
+state file under `.github/hooks/.state/` (gitignored). Same behaviour on every surface, no
+dependency on an undocumented format.
 
 ---
 
-## Pattern 5 — `/commit-push-pr` (native to Copilot prompts)
+## Pattern 1 — Rule surfacing (native)
 
-This pattern translates 1:1. A template ships at `templates/commit-push-pr.prompt.md.template`. Copy to `.github/prompts/commit-push-pr.prompt.md` and customize the project's golden rules (base branch, commit trailer, allowed paths).
+Unchanged from v1.0. `applyTo:` globs auto-load the instruction body when a matching file is being
+edited or reviewed. Discipline that still matters: keep each file short (current guidance: ~1,000
+lines max; two pages for the repo-wide file), make the globs actually match (verify with a `find`),
+and audit `applyTo:` overlap quarterly.
 
-In any Copilot Chat surface, type:
+## Pattern 2 — Correction-capture (two hooks + a flag)
 
-```
-/commit-push-pr
-```
+1. `userPromptSubmitted` → `correction-detect.mjs`: strips code fences and inline code from the
+   prompt, runs the anchored correction regexes (Rule 11), and on a match writes
+   `.github/hooks/.state/correction-pending`.
+2. `agentStop` → `stop-gate.mjs`: if the flag exists and `stop_hook_active` is false, deletes the
+   flag and returns `{"decision":"block","reason":"<the §9 reminder: draft a one-line patch to the
+   right .github/instructions/<file>.instructions.md and ask for approval — never 'I'll remember'>"}`.
 
-The prompt will collect the inputs (optional commit summary override) and walk through the 8-step workflow:
+The `/correction-capture` skill remains for surfaces where you have not installed hooks.
 
-1. Branch safety (refuse main/master/develop)
-2. Build gate (run build if build-relevant files dirty)
-3. Diff review (verify instruction files for changed paths were applied)
-4. Selective staging (NEVER `git add -A`; deny `.env*`, secrets)
-5. Conventional Commit message with project trailer
-6. Push without `--force` / `--no-verify`
-7. Open or update PR via `gh pr create`
-8. Compact final report
+## Pattern 3 — Build-gate (`agentStop`)
 
-Hard NOs are codified inline in the prompt body so the workflow can't drift.
+`stop-gate.mjs` checks `git status --porcelain` for dirty build-relevant files; if any, runs
+`<BUILD_COMMAND>` with its own internal cap **below** the hook's `timeoutSec`. Real non-zero exit →
+`{"decision":"block","reason":"<build tail>"}`. Internal cap hit → allow (inconclusive, CI builds
+every PR). Loop-guarded.
+
+## Pattern 4 — Lint-fix (`postToolUse`)
+
+`lint-fix.mjs` runs the project's auto-fix linter on the file in `tool_input` when `tool_name` is an
+edit tool. Always exits 0 and outputs nothing — a lint problem must never block.
+
+## Pattern 5 — Doc-freshness gate (`postToolUse` + `agentStop`)
+
+`doc-freshness-track.mjs` (postToolUse) records two timestamps in the state file: the last shell
+command that was a *real* production push (its own top-level command segment starting with
+`git push` / `gh pr merge` and naming `<PROTECTED_BRANCH>`; heredoc bodies and quoted text never
+count — Rule 10) and the last edit to `<CHANGELOG_PATH>`. `stop-gate.mjs` blocks when the push is
+newer than the changelog edit, with the full doc-update checklist (changelog → affected orientation
+maps → affected instruction files → `PROJECT.md` §3 if production state changed — Chapter 11).
 
 ---
 
-## What does NOT translate
+## Design rules for any Copilot hook
 
-### `PostToolUse` lint-fix has no Copilot equivalent
+1. **Decide fail-open vs fail-closed per event, on purpose.** `preToolUse` is fail-closed by the
+   platform (a crashing hook denies every edit). Wrap `main()` in try/catch and emit
+   `{"permissionDecision":"allow"}` on unexpected errors unless the hook is a security gate.
+2. **Scope narrowly.** Filter on `tool_name` / file path first; exit fast.
+3. **Cap output.** `additionalContext` and `reason` land in the model's context.
+4. **Loop guard** every `agentStop` hook on `stop_hook_active`.
+5. **One `agentStop` script, ordered checks inside it.** Copilot runs the hooks array in order but
+   the first `block` wins; keeping correction → build → doc-freshness inside one script makes the
+   order explicit and the state file reads cheap.
+6. **stdout is the channel, and it must be valid JSON.** Debug to stderr.
+7. **Commit `.github/hooks/*.json`.** The cloud agent reads only that location; a hook in
+   `~/.copilot/hooks/` enforces nothing for teammates or CI.
+8. **Restart to load.** Hook files are read at session start on the CLI and VS Code; verify in a
+   fresh session, not the one that installed them.
+9. **A killed check is inconclusive, not failed.** Your script's internal build cap must be lower
+   than the hook `timeoutSec` (which fails open anyway), and a cap hit must `allow`, never `block`.
+10. **Quoted text is data.** Strip fences, inline code and heredoc bodies before pattern-matching;
+    match shell commands per top-level segment with the verb anchored at the start.
+11. **Anchor correction regexes.** Bare `you already` matched "you already have access". A false
+    positive costs more trust than a miss.
 
-Copilot has no event for "after the file was just edited, run X." This belongs at the IDE layer:
+---
 
-- **VS Code:** ESLint extension's "Fix on Save" (`"editor.codeActionsOnSave": { "source.fixAll": true }`)
-- **JetBrains:** "Reformat code on save" + ESLint plugin
-- **Pre-commit:** Husky + lint-staged in `package.json`
+## What still needs discipline (no hook can do it)
 
-If you don't have an editor-level auto-fix yet, fix that before adopting any other parts of this chapter. Copilot will write code at whatever style your editor formats to; if your editor doesn't format on save, every PR will have formatting noise and Copilot has no way to fix it server-side.
+- The handoff schema being present and evidence-bound on every delegation.
+- A specialist refusing a vague delegation.
+- The orchestrator actually validating `return:` blocks (`tests_run` includes the build; deferred
+  work has a backlog path; `contracts_changed` is backward-compatible).
+- Reading an instruction file *before planning*, not only when `applyTo:` fires on an edit.
 
-### Lesson from the Claude framework's v1.1.0 → v1.1.2 sequence
-
-If you're running this Copilot framework alongside [`claude-orchestration-framework`](https://github.com/abhinavsehgal/claude-orchestration-framework), one cautionary note from the Claude side that *can't apply here* but is worth knowing:
-
-Claude Code's Stop hooks have a counterintuitive IO contract — `stdout` is captured but NOT surfaced into the model's next turn; only `stderr` is. The Claude framework's v1.1.0 shipped Stop hook templates that wrote reminders to stdout, which meant the reminders correctly produced + the exit code was correct, but the model never saw them. v1.1.2 fixed it by switching to stderr.
-
-This whole class of bug doesn't exist on the Copilot side because Copilot has no programmable hook events. The Pattern 1 / Pattern 2 / Pattern 3 / Pattern 5 translations above are all manual or declarative, not driven by an event runtime, so there's no "wrong IO channel" failure mode.
-
-If you author hook scripts for Claude Code based on Copilot patterns you've translated mentally, remember that on the Claude side: **Stop hooks → stderr; PreToolUse hooks → stdout.**
-
-### Hooks-on-Cloud-Agent
-
-The Copilot Cloud Agent (autonomous agent) runs in GitHub Actions with no access to per-developer settings. Hooks-style runtime enforcement on the Cloud Agent would require GitHub Actions workflow steps — outside the framework's surface area. The framework's documentation discipline applies fully to the Cloud Agent because instruction files and prompt files are repository state, not local config.
+These live in the agent bodies and the Definition of Done, exactly as in v1.0.
 
 ---
 
 ## Verification
 
-For Copilot, "did the rule fire?" is a different question than for Claude Code:
+1. **Hook files load** — start a fresh CLI session in the repo; a `sessionStart` hook that prints
+   one line of `additionalContext` proves the file was read.
+2. **Correction-capture** — type a real correction; attempt to stop; expect the block with the
+   reminder; reply with the patch; second stop succeeds (loop guard).
+3. **Build-gate** — break the build; attempt to stop; expect the block with the build tail; fix;
+   stop succeeds.
+4. **Doc-freshness** — run a (dry) `git push origin <PROTECTED_BRANCH>` in the session; attempt to
+   stop; expect the block; edit the changelog; stop succeeds. Then paste a doc that *quotes* the push
+   command and confirm no block.
+5. **Negative test** — a docs-only turn must produce no output from any hook.
+6. **Cloud agent** — assign a trivial issue; confirm in the run log that `.github/hooks/*.json`
+   was loaded.
 
-1. **`applyTo:` rule surfacing test** — open a file matching an instruction's `applyTo:` glob in Copilot Chat ("@workspace what instruction files apply here?"). The matching instruction should be listed. If not, the glob doesn't match — fix it.
-2. **Correction-capture test** — issue a correction in Chat, then invoke `/correction-capture`. The prompt should produce a draft instruction-file patch, not a "noted" acknowledgment.
-3. **Build-gate test** — break the build, run a specialist task, confirm the specialist's `return:` block fails the build gate and the orchestrator rejects the return.
-4. **`/commit-push-pr` test** — run on a trivial doc change with a `--dry-run` style abort instruction. Confirm the workflow is interruptible at each step.
-
-If any of these fail in real-world use, treat as P0 — the Copilot enforcement layer is thinner than Claude Code's, and the few mechanical pieces it has must work.
+If any of these fail, treat it as P0 — a hook that silently allows is worse than no hook.
 
 ---
 
 ## Cross-links
 
-- `docs/01-PRINCIPLES.md` § Principle 5 — what's runtime-enforced vs documented (the line is different on Copilot than on Claude Code)
-- `docs/05-INSTRUCTIONS-AND-PROMPTS.md` — `applyTo:` mechanics and prompt-file basics
-- `docs/04-HANDOFF-SCHEMA.md` — how the orchestrator's incoming-validation enforces Pattern 3 (build-gate via Definition of Done)
-- `docs/08-COMMON-PITFALLS.md` § Pitfall 17 — Copilot has no Stop event; correction-capture and build-gate are manual on Copilot
-- `templates/correction-capture.prompt.md.template`
-- `templates/commit-push-pr.prompt.md.template`
+- `docs/01-PRINCIPLES.md` § Principle 5 — runtime-enforced vs documented (the line moved in v1.2)
+- `docs/05-INSTRUCTIONS-AND-PROMPTS.md` — `applyTo:` mechanics; skills vs prompt files
+- `docs/08-COMMON-PITFALLS.md` § Pitfall 19 (hooks exist — retraction), § Pitfall 20 (platform drift)
+- `docs/11-PROJECT-TRUTH-AND-LEARNINGS.md` — the rule Pattern 5 enforces
+- `templates/hooks/` · `templates/skills/`
+- Official: *GitHub Copilot hooks reference*, *VS Code → Hooks*, *About agent skills* (verified 2026-08-22)

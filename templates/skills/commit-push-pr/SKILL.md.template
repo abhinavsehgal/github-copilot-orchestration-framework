@@ -1,12 +1,15 @@
 ---
-description: Validate → commit → push → open/update PR. Enforces the project's golden rules at the slash-prompt boundary so daily commits stay safe.
+# File: .github/skills/commit-push-pr/SKILL.md  — an AGENT SKILL (works on the cloud agent, the CLI and every IDE).
+# The v1.1 prompt-file version (templates/commit-push-pr.prompt.md.template) is IDE-only; keep both or keep this one.
+name: commit-push-pr
+description: Validate → commit → push → open/update PR against the project's base branch. Use when the user asks to commit, push, ship, or open a PR from a feature branch. Enforces the golden rules (no protected-branch pushes, build before commit, no force, selective staging, no secrets).
 ---
 
 # /commit-push-pr
 
-> **Invocation.** Type `/commit-push-pr` in IDE Chat (VS Code, JetBrains, Visual Studio) on a feature branch. Prompt files are IDE-only; for the cloud agent and the Copilot CLI use the skill form at `templates/skills/commit-push-pr/` (v1.2).
+> **Invocation.** `/commit-push-pr` on any Copilot surface (cloud agent, CLI, VS Code, JetBrains, Visual Studio), or auto-loaded when the request matches the description. Skills are cross-surface; the older prompt-file form is IDE-only.
 >
-> **Why this exists.** A reusable codification of the project's golden rules around commit + push + PR. Every step is named so the developer can interrupt cleanly. Inspired by Boris Cherny's `/commit-push-pr` slash command pattern, ported to Copilot's prompt-file surface.
+> **Why this exists.** A reusable codification of the project's golden rules around commit + push + PR. Every step is named so the developer can interrupt cleanly. Inspired by Boris Cherny's `/commit-push-pr` slash command pattern, ported to Copilot's agent-skill surface (v1.2; it was a prompt file in v1.1).
 
 ## When to invoke
 

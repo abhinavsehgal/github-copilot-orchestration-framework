@@ -1,4 +1,6 @@
-# 09 — Runbook: Bootstrap a New Project
+# 09 — Runbook
+
+> **v1.2.0 additions to this runbook:** after the specialists and instruction files exist, BOOTSTRAP Step 13 generates the project-truth set (`docs/ai-context/PROJECT.md`, `LEARNINGS.md`, `GLOSSARY.md`, the `<slug>-engineering` skill under `.github/skills/`, one backlog) — Chapter 11. Repeatable workflows are now **skills** (`.github/skills/<name>/SKILL.md`, cross-surface); prompt files are IDE-only. Hooks (`.github/hooks/*.json`) are a later hardening phase — Chapter 10. Multi-repo setups — Chapter 12.: Bootstrap a New Project
 
 Step-by-step guide for adopting this framework on a real codebase using GitHub Copilot. Plan for ~2-4 hours of focused work.
 
@@ -52,7 +54,7 @@ Read templates from there. Customize for this project: <project-name>.
 
 Copilot will:
 1. Create `.github/agents/<project>-orchestrator.md` from the orchestrator template
-2. Create one `.github/agents/<specialist>.md` per specialist
+2. Create one `.github/agents/<specialist>.agent.md` per specialist
 3. Create `.github/instructions/<domain>.instructions.md` files (with `applyTo:` globs)
 4. Create `.github/prompts/investigate-bug.prompt.md` and `.github/prompts/build-feature.prompt.md` from skill templates
 5. Create `docs/ai-context/HANDOFF_SCHEMA.md`

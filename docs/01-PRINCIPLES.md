@@ -12,7 +12,7 @@ This matters because:
 - It works with any Copilot surface that recognizes custom agents (Chat in VS Code / JetBrains / Visual Studio, the cloud agent on github.com, the Copilot CLI)
 - It's fully transparent — every rule is in version control as plain markdown
 - It's reversible — delete `.github/agents/`, `.github/instructions/`, `.github/prompts/` and you're back to default Copilot
-- Hard runtime enforcement (when Copilot eventually exposes hooks) can be added later as a separate hardening pass
+- Hard runtime enforcement (Copilot hooks — `.github/hooks/*.json`, v1.2) can be added later as a separate hardening pass
 
 ## 2. Each specialist runs with focused tool scope
 

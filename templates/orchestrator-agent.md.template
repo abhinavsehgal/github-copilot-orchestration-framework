@@ -1,7 +1,10 @@
 ---
+# File: .github/agents/<PROJECT_SLUG>-orchestrator.agent.md  (`.agent.md` is the current suffix; bare `.md` still loads)
+# Keep `agents:` identical to the specialist routing table in the body — the cloud agent ignores the field and reads only the body.
 name: <PROJECT_SLUG>-orchestrator
 description: Main task dispatcher for <PROJECT_NAME>. Use for any medium/complex task. Picks the minimum docs/specialists needed; never loads everything. Bounded by "I CAN" and "I CANNOT" lists. Reference other agents using @<specialist-name> when delegating.
 tools: ['codebase', 'search', 'usages', 'problems', 'changes', 'fetch']
+agents: [<SPECIALIST_LIST>]   # VS Code subagent allowlist (exact specialist names, never `*`); ignored by the cloud agent
 target: github-copilot
 user-invocable: true
 disable-model-invocation: false

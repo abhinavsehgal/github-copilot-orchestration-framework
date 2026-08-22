@@ -1,0 +1,128 @@
+# <PROJECT_NAME> — Project Truth
+
+> **What this is.** The single consolidated "what is true right now" document for agents: product,
+> environments, current deployed state, repo map, sources of truth, verified commands, definitions
+> of done. Read this FIRST on any substantial task, then route deeper via `docs/ai-context/INDEX.md`.
+> Companion: `LEARNINGS.md` (decisions, failures, corrections).
+>
+> **Freshness contract.** Every fact here is date-stamped. Compiled and verified against
+> `<REMOTE>/<BASE_BRANCH>` @ `<COMMIT_SHA>` on **<YYYY-MM-DD>**. Every production push MUST
+> freshen this document in the same turn (Chapter 11; enforced by the `agentStop` doc-freshness hook if Chapter 10 Pattern 5 is installed).
+> If today is much later than the stamp above, trust `<CHANGELOG_PATH>` over §3 — and then fix §3.
+
+---
+
+## 1. Product
+
+<ONE_PARAGRAPH — what the product is, for whom, and the one-sentence positioning statement
+(link the owner-approved source if marketing claims must be audited against it).>
+
+**Roles & permission boundaries**
+
+| Role | How it authenticates | Boundary notes |
+|---|---|---|
+| <ROLE_1> | <mechanism> | <what it must never see or do> |
+| <ROLE_2> | <mechanism> | <…> |
+
+**Load-bearing invariants** (one line each, link the rule file):
+- <e.g. "Tier-A content never crosses to tier-B readers — `.github/instructions/<domain>.instructions.md`">
+
+---
+
+## 2. Environments, branches, deploy
+
+| Branch | Environment | URL | Data store |
+|---|---|---|---|
+| `<PROD_BRANCH>` | production | <url> | <identifier> |
+| `<STAGING_BRANCH>` | staging | <url> | <identifier> |
+
+- **The only deploy path is** <mechanism — e.g. "CI workflow X on push; the host's own git
+  integration is disabled">.
+- **What the deploy pipeline does NOT do** (each of these has caused an incident somewhere):
+  - <e.g. "Migrations do not auto-apply — apply to the target environment manually with the
+    promoting deploy and record it in the changelog">
+  - <e.g. "Environment variables of kind X need a rebuild to take effect">
+- **Approval gates:** never push or merge to `<PROD_BRANCH>` without current-turn owner approval.
+  Any production data write needs per-incident approval naming the environment.
+
+---
+
+## 3. Current state — what is live where (as of <YYYY-MM-DD>)
+
+> The single biggest fresh-agent trap: most recent work is staging-only and flag-gated.
+
+| Feature / change | Production | Staging | Flag (if any) | Since | Notes |
+|---|---|---|---|---|---|
+| <feature> | ✅ live | ✅ | `<FLAG>` = on | <date> | <migration N applied both> |
+| <feature> | ❌ not deployed | ✅ | `<FLAG>` = off | <date> | <what is needed to promote> |
+
+**Applied migrations / schema version:** prod `<N>`, staging `<M>` (as of <date>).
+
+---
+
+## 4. Repository map (verified <YYYY-MM-DD>)
+
+```
+<root>/
+├── <dir>/        ← <what lives here>
+├── <dir>/        ← <…>
+└── docs/
+    ├── ai-context/   ← orientation maps, PROJECT.md, LEARNINGS.md, INDEX.md
+    └── _archive/     ← frozen history; never linked from active docs
+```
+
+---
+
+## 5. Architecture snapshot
+
+<10–20 LINES — the request path, the data path, the async paths (crons, queues, webhooks), the
+third parties. Link `docs/ARCHITECTURE.md` for depth.>
+
+---
+
+## 6. Sources of truth by domain
+
+> The canonical helper / table / module for each concept. **Reuse these; never re-implement.**
+
+| Concept | Source of truth | Notes |
+|---|---|---|
+| <e.g. "display name for a status"> | `<path/to/helper>` | <every renderer must go through it> |
+| <e.g. "the user's plan"> | `<table.column>` | <never infer from a third-party API at runtime> |
+
+---
+
+## 7. Commands (verified against `<BUILD_CONFIG_FILE>` on <YYYY-MM-DD>)
+
+```bash
+<BUILD_COMMAND>        # must pass before commit
+<TEST_COMMAND>         # the CI gate
+<E2E_COMMAND>          # needs <prerequisite>
+<DEV_COMMAND>
+```
+
+---
+
+## 8. Definitions of done (per change type)
+
+| Change type | Done means |
+|---|---|
+| Bug fix | root cause stated (file:line) · smallest fix · regression test · rules read listed |
+| Feature | flag-gated default-off if user-visible · both/all clients · docs + changelog · backlog for deferred parts |
+| Migration | applied to target env · recorded in changelog · §3 updated |
+| Data correction | dry-run first · explicit apply · post-write verification query · per-incident approval if production |
+
+---
+
+## 9. Known sharp edges & unverified items (<YYYY-MM-DD>)
+
+- <thing that looks wrong but is intentional, with the reason>
+- <claim nobody has verified yet — tagged `unknown` per the evidence taxonomy>
+
+---
+
+## Cross-links
+
+- `docs/ai-context/INDEX.md` — task-type routing.
+- `docs/ai-context/LEARNINGS.md` — decisions, failures, corrections.
+- `<CHANGELOG_PATH>` — dated release log.
+- `docs/ai-context/HOOKS.md` — what is enforced mechanically (if `.github/hooks/` is installed).

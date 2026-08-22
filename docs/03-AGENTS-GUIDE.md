@@ -29,13 +29,14 @@ Every project has exactly **one** orchestrator. Naming convention: `<project-nam
 name: <project>-orchestrator
 description: Main task dispatcher for <Project>. Use for any medium/complex task. Picks the minimum docs and specialists; never loads everything. Reference other agents using the agent tool alias when delegating.
 tools: ['codebase', 'search', 'usages', 'problems', 'changes']
+agents: ['<specialist-1>', '<specialist-2>', 'qa-functional', 'security-privacy']   # VS Code subagent allowlist; ignored by the cloud agent
 target: github-copilot
 user-invocable: true
 disable-model-invocation: false
 ---
 ```
 
-(Field reference: see [Custom agents configuration](https://docs.github.com/en/copilot/reference/custom-agents-configuration) — exact tool names depend on Copilot extension version.)
+File name: `.github/agents/<project>-orchestrator.agent.md`. (Field reference: see [Custom agents configuration](https://docs.github.com/en/copilot/reference/custom-agents-configuration) — exact tool names depend on Copilot extension version. `agents:` is documented by VS Code only — it names the agents this one may invoke as subagents, `*` meaning all; the cloud agent ignores the field, so keep the same list in the body too.)
 
 ## Specialists
 
@@ -218,18 +219,25 @@ The "Incoming handoff validation" and "Return schema" sections are **identical a
 
 ## Cross-agent invocation
 
-In Copilot, one agent can reference another via the `agent` tool alias (when configured):
+In Copilot, one agent can invoke another. On the cloud agent this is the `agent` tool alias, which "allows a different custom agent to be invoked to accomplish a task"; in VS Code it is the `runSubagent` tool, gated by the invoking agent's `agents:` frontmatter list:
 
 ```
 @<other-specialist-name> <task-with-handoff-yaml-block>
 ```
 
-This is the equivalent of Claude Code's `Agent(specialist-1, specialist-2)` allowlist — but Copilot doesn't expose a per-agent allowlist for which other agents can be invoked. The orchestrator's body documents which specialists exist; respecting the routing is documentation discipline.
+Whether there is an **allowlist** depends on the surface (verified 2026-08-22):
+
+- **VS Code:** `agents: ['<specialist-1>', …]` on the orchestrator is a real allowlist — an agent not named cannot be invoked as a subagent (`*` = all; never use `*` on an orchestrator). A subagent invoking its own subagents is off unless `chat.subagents.allowInvocationsFromSubagents` is enabled. This is the equivalent of Claude Code's `Agent(specialist-1, specialist-2)` allowlist.
+- **Cloud agent (github.com):** no per-agent allowlist is documented. The `agents:` field is ignored; the orchestrator's body is the only routing table, and respecting it is documentation discipline.
+
+Either way, declare `agents:` on the orchestrator and repeat the list in its body — one line gives you enforcement on one surface and a machine-readable contract on both.
+
+**Specialists do not chain.** Even where the platform allows a specialist to invoke another specialist, by framework convention a specialist returns to the orchestrator with `recommended_next_agent` and lets the orchestrator issue the next handoff. A specialist that invokes another has become an un-audited orchestrator: the handoff schema, the evidence rule and the orchestrator's return-validation are all bypassed one level down. Leave `agents:` off specialists entirely (or empty). The only sanctioned nesting is orchestrator → orchestrator (Chapter 12, multi-repo), where both hops carry the full schema.
 
 ## Naming conventions
 
 - Lowercase with hyphens: `backend-api`, `frontend-ui`, `legal-compliance`
-- Filename matches `name`: `backend-api` → `backend-api.md`
+- Filename matches `name`, with the `.agent.md` suffix: `backend-api` → `backend-api.agent.md` (a bare `backend-api.md` still loads; `.agent.md` is the current convention and is what a renamed `.chatmode.md` becomes — Pitfall 7)
 - Be specific but not over-narrow: `payments` good, `stripe-webhook-handler` too narrow
 - Cross-cutting concerns get their own agent: `qa-functional`, `security-privacy`, not folded into another specialist
 
@@ -255,13 +263,15 @@ Extend an existing specialist when:
 
 ❌ **Specialists with no `tools:` field.** They inherit ALL tools, defeating defense-in-depth. Always declare `tools` explicitly.
 
+❌ **Specialists that invoke other specialists.** VS Code allows it (via `agents:`) and the cloud agent's `agent` tool does not stop it, but a specialist that does so has become an un-audited orchestrator — the handoff schema, the evidence rule and the orchestrator's return-validation are all bypassed one level down. By framework convention a specialist returns `recommended_next_agent` and lets the orchestrator chain the work (see "Cross-agent invocation").
+
 ❌ **Specialists whose "I CAN" includes "approve production deploys."** That's the project owner's call.
 
 ❌ **Putting the orchestrator's persona in `.github/copilot-instructions.md`.** That file is loaded for inline completions and code review too — pollutes everything. Keep the orchestrator persona in `.github/agents/<project>-orchestrator.md`, separate.
 
 ## A note on cloud agent vs IDE chat agents
 
-The same `.github/agents/<NAME>.md` file works for both:
+The same `.github/agents/<NAME>.agent.md` file works for both:
 - **IDE Chat custom agents** (VS Code, JetBrains, etc.)
 - **Cloud agent on github.com** (autonomous agent that takes issue/PR assignments)
 
@@ -269,6 +279,6 @@ Some properties may behave differently between environments:
 - The cloud agent runs in true context isolation
 - The IDE chat agent runs within the active Chat session's context
 - The `target:` field can scope an agent to one or the other (`vscode` vs `github-copilot`)
-- Some IDE-specific properties (e.g. `argument-hint`, `handoffs` in VS Code) are not supported in the cloud agent
+- Some properties are VS Code-only (`agents`, `handoffs`, `argument-hint`, `hooks`): `argument-hint` and `handoffs` are explicitly not supported on the cloud agent per the VS Code docs, and `agents:` is ignored there (Pitfall 9)
 
 For most projects, write agents that work in BOTH environments by avoiding IDE-specific properties. Use `target:` only when an agent genuinely needs to be exclusive to one environment.

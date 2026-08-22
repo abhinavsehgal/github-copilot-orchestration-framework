@@ -59,7 +59,7 @@ handoff:
 | `schema_version` | yes | Currently `1`. Bump on breaking changes. |
 | `handoff_id` | yes | Short unique id. Specialist echoes it in the return so they pair. |
 | `from_agent` | yes | Always `<PROJECT_SLUG>-orchestrator` for outbound. |
-| `to_agent` | yes | The specialist's `name` field from its `.github/agents/<NAME>.md` frontmatter. |
+| `to_agent` | yes | The specialist's `name` field from its `.github/agents/<NAME>.agent.md` frontmatter. |
 | `goal` | yes | One sentence. |
 | `task_class` | yes | One of the six values. |
 | `affected_roles` | yes | Non-empty list. |

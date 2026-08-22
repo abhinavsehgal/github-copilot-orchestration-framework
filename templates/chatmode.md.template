@@ -1,3 +1,5 @@
+<!-- RETIRED in v1.2.0 (verified 2026-08-22): custom chat modes are the old name for custom agents. The docs say to RENAME .chatmode.md files to .agent.md. Do not create new chat modes; use templates/specialist-agent.md.template. This file stays only so legacy migrations have a reference for the old field names. -->
+
 ---
 description: <ONE_SENTENCE_PERSONA_DESCRIPTION — appears in the chat mode dropdown>
 tools: ['codebase', 'search', 'usages', 'problems', 'changes']
