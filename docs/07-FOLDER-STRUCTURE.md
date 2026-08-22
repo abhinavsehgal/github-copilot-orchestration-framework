@@ -14,8 +14,10 @@ How to organize Copilot config and documentation so the AI (and humans) always k
 │   └── <domain>.instructions.md
 ├── prompts/                            ← repeatable workflows (slash commands)
 │   └── <workflow>.prompt.md
-└── chatmodes/                          ← optional: persona-based modes
-    └── <persona>.chatmode.md
+├── skills/                             ← repeatable workflows (cross-surface) — v1.2
+│   └── <name>/SKILL.md
+└── hooks/                              ← optional mechanical enforcement — v1.2
+    └── framework.json                  (chat modes are retired: rename .chatmode.md → .agent.md)
 ```
 
 ## The documentation tier
@@ -119,7 +121,7 @@ Is it a multi-step workflow that recurs (manually invoked)?
   → .github/prompts/<workflow>.prompt.md
 
 Is it an agent persona definition?
-  → .github/agents/<name>.md
+  → .github/agents/<name>.agent.md
 
 Is it a sprint report, audit, post-mortem, or dated snapshot?
   → docs/_archive/<YYYY-MM>/<file>.md

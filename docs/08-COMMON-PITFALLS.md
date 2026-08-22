@@ -11,7 +11,7 @@ Twenty-eight hard-won lessons. GitHub Copilot has its own customization quirks l
 - Code review gets polluted with "delegate this to backend-api" instructions
 - Every plain Chat session forces the orchestrator pattern on simple tasks
 
-**Right answer:** Keep `.github/copilot-instructions.md` short (under 200 lines). It's a router. The orchestrator persona lives in `.github/agents/<project>-orchestrator.md` and only loads when explicitly selected.
+**Right answer:** Keep `.github/copilot-instructions.md` short (under 200 lines). It's a router. The orchestrator persona lives in `.github/agents/<project>-orchestrator.agent.md` and only loads when explicitly selected.
 
 ## Pitfall 2: Instruction files have a documented size budget — long files get ignored or skimmed
 
@@ -41,7 +41,7 @@ For REVIEW-ONLY agents (legal-compliance, security-privacy, architecture-review)
 
 ## Pitfall 5: Cloud Agent vs IDE Chat agent — different contexts
 
-The same `.github/agents/<NAME>.md` file works in both, BUT:
+The same `.github/agents/<NAME>.agent.md` file works in both, BUT:
 - The cloud agent runs in true context isolation (fresh environment per task)
 - The IDE chat agent runs within the active Chat session's context — it can see prior messages
 
@@ -187,7 +187,7 @@ If you ran VS Code's `/init` previously, or your team has been adding to `.githu
 
 **Specific risks:**
 - Existing `.github/copilot-instructions.md` with team rules → Pre-flight 4 (drift detection) flags stale content; Step 11 (merge step) shows a 3-pane diff before writing.
-- Existing `.github/agents/<name>.md` with same name as a proposed specialist → Pre-flight 2 (naming collision check) STOPS for explicit user decision per file.
+- Existing `.github/agents/<name>.agent.md` (or `<name>.md`, or a `.chatmodes/<name>.chatmode.md`) with same name as a proposed specialist → Pre-flight 2 (naming collision check) STOPS for explicit user decision per file.
 - Existing `.github/instructions/` with overlapping `applyTo:` → Pre-flight 3 detects glob overlap; both files would load creating contradictory rules.
 - Existing `.github/chatmodes/` heavily used → Pre-flight 5 surfaces the parallel system; user decides migrate vs coexist.
 

@@ -57,7 +57,7 @@ handoff:
 | `schema_version` | yes | Currently `1`. Bump on breaking changes. |
 | `handoff_id` | yes | Short unique id. Specialist echoes it on return so they pair. |
 | `from_agent` | yes | Always the orchestrator's name. |
-| `to_agent` | yes | The specialist's `name` field from its `.github/agents/<NAME>.md` frontmatter. |
+| `to_agent` | yes | The specialist's `name` field from its `.github/agents/<NAME>.agent.md` frontmatter. |
 | `goal` | yes | One sentence with measurable outcome. "Fix" or "improve" without an outcome is too vague. |
 | `task_class` | yes | One of the six values. |
 | `affected_roles` | yes | Non-empty list. |
@@ -336,7 +336,7 @@ without a backlog path is incomplete (Chapter 11).
 - Breaking changes (renaming fields, changing field semantics) bump the version.
 - Bumps require updating HANDOFF_SCHEMA.md, the orchestrator, and every specialist file in the same PR.
 
-## Why this schema is enough (without runtime hooks)
+## Why this schema is enough (hooks are optional, not required)
 
 The schema is enforced by:
 1. The orchestrator's instructions to ALWAYS emit the outbound block.
@@ -348,4 +348,4 @@ This is documentation enforcement — agents follow the rules because their inst
 - The orchestrator catches return-block violations (missing fields, wrong types)
 - Refusal is a one-shot rejection: if the specialist returns the refusal template, the orchestrator must re-issue with the missing fields
 
-If GitHub Copilot eventually exposes pre-tool-use hooks (similar to other AI tools), you could add hard runtime enforcement — but the documentation enforcement covers the majority of value at minimal complexity.
+Copilot now has `preToolUse` / `agentStop` hooks (v1.2, `docs/10-MECHANICAL-ENFORCEMENT.md`), so a hook that validates the outbound YAML block before an `agent` tool call is possible — but the documentation enforcement still covers the majority of value at minimal complexity, and the framework ships no schema-validation hook by default.

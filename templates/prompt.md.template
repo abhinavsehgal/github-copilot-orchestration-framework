@@ -58,7 +58,7 @@ description: <ONE_SENTENCE_DESCRIPTION_OF_WHEN_TO_USE_THIS — appears in the /c
 
 ## Cross-links
 
-- `.github/agents/<related-agent>.md` — the specialist this prompt typically pairs with.
+- `.github/agents/<related-agent>.agent.md` — the specialist this prompt typically pairs with.
 - `.github/instructions/<related-instructions>.instructions.md` — the rules this prompt enforces.
 - `docs/ai-context/<related-orientation>.md` — orientation for the domain.
 

@@ -59,7 +59,7 @@ done
 ```
 
 For EACH collision found, STOP and ASK:
-> `<NEEDS USER CONFIRMATION: .github/agents/<name>.md already exists. Options: (a) overwrite (existing content goes to backup), (b) skip this agent, (c) merge content. Which?>`
+> `<NEEDS USER CONFIRMATION: .github/agents/<name>.agent.md (or <name>.md / .github/chatmodes/<name>.chatmode.md) already exists. Options: (a) overwrite (existing content goes to backup), (b) skip this agent, (c) merge content, (d) for a .chatmode.md: rename to .agent.md and merge. Which?>`
 
 Do NOT silently overwrite ANY collision. If the user picks (c) merge, propose the merged content and get explicit approval before writing.
 

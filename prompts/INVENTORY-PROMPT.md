@@ -125,7 +125,8 @@ cat .github/copilot-instructions.md 2>/dev/null | head -50
 ls .github/agents/ 2>/dev/null
 ls .github/instructions/ 2>/dev/null
 ls .github/prompts/ 2>/dev/null
-ls .github/chatmodes/ 2>/dev/null
+ls .github/chatmodes/ 2>/dev/null   # retired format — any file here will be RENAMED to .github/agents/<name>.agent.md
+ls .github/skills/ .github/hooks/ 2>/dev/null
 cat AGENTS.md 2>/dev/null | head -50
 ```
 
@@ -193,7 +194,7 @@ Use the discovery results above. Cite SPECIFIC files for every claim.
 - CI/CD — cite the workflow file(s)
 - Protected branches — list with confirmation source
 - Test runners — unit + E2E (cite config files)
-- **Existing Copilot config** — what already exists in `.github/copilot-instructions.md`, `.github/agents/`, `.github/instructions/`, `.github/prompts/`, `.github/chatmodes/`, `AGENTS.md`. Bootstrap will need to merge with these, not overwrite.
+- **Existing Copilot config** — what already exists in `.github/copilot-instructions.md`, `.github/agents/`, `.github/instructions/`, `.github/prompts/`, `.github/skills/`, `.github/hooks/`, `.github/chatmodes/` (retired — rename to `.agent.md`), `AGENTS.md`. Bootstrap will need to merge with these, not overwrite.
 
 ### 2. Roles and audiences
 List every distinct user type. Infer from route group structure, permission-model files, README. For each role:

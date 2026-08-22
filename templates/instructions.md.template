@@ -7,7 +7,7 @@ excludeAgent: "code-review"
 
 > **What this is.** Auto-loaded by GitHub Copilot when editing any file matching the `applyTo:` glob in the frontmatter above. These are the hard-won invariants for this domain.
 >
-> **`excludeAgent: "code-review"`** is OPTIONAL. Use it if these instructions shouldn't apply during Copilot code review (e.g. if they're implementation guidance not relevant to reviewing diffs). Remove the line if you DO want code review to use these instructions. Note: code review reads only the first 4,000 characters of each instruction file.
+> **`excludeAgent: "code-review"`** is OPTIONAL. Use it if these instructions shouldn't apply during Copilot code review (e.g. if they're implementation guidance not relevant to reviewing diffs). Remove the line if you DO want code review to use these instructions. Keep each instruction file short — the current guidance is about 1,000 lines per file and no more than two pages for the repo-wide file (verified 2026-08-22); front-load the review-relevant rules.
 
 ## Hard rules
 
@@ -47,7 +47,7 @@ A good instruction file:
 - Has a real "Why" for each rule (past incident or hard invariant — not aspirational)
 - Has a concrete "How" for each rule (the helper to use, the check to run, the pattern to follow)
 - Each rule is ≤ 4 sentences (move long detail to canonical doc)
-- Front-loads code-review-relevant rules (code review only reads first 4,000 chars)
+- Front-loads code-review-relevant rules (short files; current guidance ≈1,000 lines max, two pages for the repo-wide file)
 - Is grouped with related rules under one domain file
 
 A bad instruction file:

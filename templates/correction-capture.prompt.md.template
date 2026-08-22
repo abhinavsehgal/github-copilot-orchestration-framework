@@ -99,7 +99,7 @@ Wait for user approval. Do NOT silently apply patches to instruction files witho
 ## Hard NOs
 
 - Never silently apply an instruction-file patch without explicit user `yes`
-- Never patch a file that has > 3,000 chars (Copilot code-review reads only the first 4,000) without first showing the user the line count and asking whether to split into a separate file
+- Never patch an instruction file that is already long (current guidance ≈1,000 lines max) without first showing the user the line count and asking whether to split into a separate file
 - Never overwrite or rewrite an existing instruction without preserving its history (additions only, unless the user explicitly accepts a rewrite)
 - Never use the words "I'll remember" / "I'll keep that in mind" / "noted" — replace with the patch or with explicit "this isn't a recurring rule, declining to codify"
 
