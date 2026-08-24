@@ -33,6 +33,9 @@ All notable changes to the GitHub Copilot Orchestration Framework. Format follow
   silent-grinder failure class: completion write's error never read, "ran" reported as "worked").
 - **REFINEMENT checks 11–12** — context weight pass; routine health pass (noise vs budget,
   tuning-log liveness, caps verified).
+- **PDF regenerated** — `GitHub-Copilot-Orchestration-Framework.pdf` is now the v1.3.0 render
+  (60 pages: quickstart + all 14 chapters, chapter 10 hooks rewrite included), closing the "still
+  the v1.1.2 render" gap tracked since v1.2.0.
 
 ---
 

@@ -209,7 +209,7 @@ Estimated time: **2-4 hours** (split across phases — see `docs/09-RUNBOOK.md`)
 
 ### Scenario C — Just want to read the framework
 
-Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — self-contained **as of v1.1.2**; it predates the v1.2 hooks rewrite and chapters 11–12 (regenerate is tracked in the changelog). Or browse the markdown files in `docs/` for clickable cross-links.
+Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — the **v1.3.0 render** (60 pages: quickstart + all 14 chapters, hooks rewrite included). Or browse the markdown files in `docs/` for clickable cross-links.
 
 The most actionable single chapter is **`docs/00-QUICKSTART.md`** — every step with *what / why / paste this / you know it worked when*, through the multi-repo workspace. `docs/09-RUNBOOK.md` is its long form.
 
