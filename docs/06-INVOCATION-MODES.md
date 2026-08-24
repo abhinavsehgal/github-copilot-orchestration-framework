@@ -199,6 +199,16 @@ cd <repo>   # no --cwd flag — the CLI loads customizations from the working di
 copilot -p "Run /qa-flow on the checkout page and write findings to docs/qa/latest.md" --agent=qa-functional --allow-tool=<read/run tools as needed> -s
 ```
 
+## Scheduled runs — standing routines (v1.3)
+
+Modes 5 and 6 put on a clock, with governance. A routine is a narrow charter file executed on a
+schedule — a GitHub Actions `schedule:` workflow that assigns the routine's issue to the cloud
+agent (Mode 5), or runs `copilot -p --agent=<routine-agent>` headless (Mode 6) — producing small
+PRs behind review gates, never direct writes. It is the only way this framework runs with nobody
+watching, which is why it carries the strictest output contract: repro + truth table on every
+fix-PR, one reporting surface, budgets and attempt caps, and a human on every merge. Full
+conventions, starter catalog and budgets: `docs/13-STANDING-ROUTINES.md`.
+
 ## Anti-patterns
 
 ❌ **Using plain Chat for everything.** Cross-domain work flooded with context. Specialists never invoked.

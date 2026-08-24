@@ -2,6 +2,40 @@
 
 All notable changes to the GitHub Copilot Orchestration Framework. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.0] — 2026-08-24
+
+### Added — the third leg: scheduled autonomy
+
+- **`docs/13-STANDING-ROUTINES.md`** — standing routines: narrow agent jobs on a schedule, producing
+  small PRs behind review gates. The seven conventions (one charter per routine; PRs only; repro +
+  truth table on every fix; one reporting surface; never self-merge; wrong output tunes the routine,
+  not just the output; attempt caps + a verified retire path), model/effort tiering, a starter
+  catalog, and the Copilot run mechanisms (scheduled workflow → cloud agent via issue assignment;
+  scheduled workflow → headless `copilot -p --agent=…`; whether `.github/hooks/*.json` fire in
+  headless CI sessions is explicitly marked not re-verified — the PR gate is the enforcement layer
+  until an install stamps a verified-on date). Distilled from the Claude Code team's public
+  maintenance-fleet practice (Aug 2026: 388 PRs opened, 180 merged, ~1-in-50 noise), restated
+  stack- and domain-agnostically.
+- **`templates/routine.md.template`** — the checked-in routine charter: scope, schedule + kill
+  switch, output contract, reporting, gates (Copilot code review on every routine PR), budgets/caps
+  with a CHECKED completion write, noise budget, append-only tuning log.
+- **`templates/skills/hill-climb/SKILL.md.template`** — the metric-loop skill: "iterate on X with a
+  measurement and a dataset until it hits Y" (baseline → one hypothesis per iteration → measure →
+  keep/revert → append-only ratchet file; stop on target / plateau / budget).
+- **Chapter 12 § Scheduled workspace routines** — specifies the already-named scheduled
+  `contract-guardian` job as a routine, plus service-map-freshener and workspace janitor; workspace
+  routines stay read-only + reports, child writes still delegate to the child's own orchestrator.
+- **Chapter 6 § Scheduled runs** — standing routines as Modes 5/6 on a clock, with governance.
+- **Pitfall 29** — a context system is a program: bisect misbehavior by moving the context files
+  aside on a scratch branch; weigh the install by matched `applyTo:` globs × file size + usage
+  reports; make every instruction file earn its context.
+- **Pitfall 30** — an unattended job without a verified retire path runs forever (the 17-day
+  silent-grinder failure class: completion write's error never read, "ran" reported as "worked").
+- **REFINEMENT checks 11–12** — context weight pass; routine health pass (noise vs budget,
+  tuning-log liveness, caps verified).
+
+---
+
 ## [1.2.1] — 2026-08-22
 
 ### Fixed — same-day audit of v1.2.0 (stale text, contradictions, install gaps)

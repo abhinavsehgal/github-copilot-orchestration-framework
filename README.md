@@ -67,11 +67,12 @@ github-copilot-orchestration-framework/
 │   ├── 05-INSTRUCTIONS-AND-PROMPTS.md    ← path-globbed instructions + prompt files
 │   ├── 06-INVOCATION-MODES.md            ← Chat vs Edit vs Cloud Agent vs CLI
 │   ├── 07-FOLDER-STRUCTURE.md            ← three-tier doc organization
-│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (28 as of v1.2)
+│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (30 as of v1.3)
 │   ├── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
 │   ├── 10-MECHANICAL-ENFORCEMENT.md      ← (rewritten v1.2) Copilot hooks: the contract, five patterns, twelve design rules
 │   ├── 11-PROJECT-TRUTH-AND-LEARNINGS.md ← (v1.2) PROJECT.md / LEARNINGS.md / backlogs, the evidence ladder, the six-gate playbook
-│   └── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
+│   ├── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
+│   └── 13-STANDING-ROUTINES.md           ← (v1.3) scheduled autonomy: routine fleets, output contracts, budgets, review gates
 │
 ├── prompts/                              ← ready-to-paste Chat prompts for bootstrapping
 │   ├── INVENTORY-PROMPT.md
@@ -95,7 +96,8 @@ github-copilot-orchestration-framework/
     ├── PROJECT.md.template · LEARNINGS.md.template · BACKLOG.md.template · GLOSSARY.md.template   ← (v1.2) the project-truth set
     ├── engineering-playbook-skill.md.template ← (v1.2) six gates + evidence ladder, as .github/skills/<slug>-engineering/SKILL.md
     ├── skill.md.template                      ← (v1.2) generic agent-skill shape for .github/skills/<name>/SKILL.md
-    ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build
+    ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build; (v1.3) hill-climb
+    ├── routine.md.template                    ← (v1.3) standing-routine charter (Chapter 13)
     ├── hooks/                                 ← (v1.2) hooks.json + hook-io / correction-detect / doc-freshness-track / lint-fix / stop-gate
     └── workspace/                             ← (v1.2) the multi-repo layer: .code-workspace, manifest, router, orchestrator + 2 specialists, contract instructions, delegate skill + scripts
         ├── bootstrap.sh.template                 ← (v1.2) creates the whole layer from a filled workspace.json

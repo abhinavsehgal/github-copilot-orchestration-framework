@@ -107,6 +107,25 @@ Also check: no `.chatmode.md` files remain (retired → `.agent.md`); the instru
 - Glossary: any new name for an existing concept introduced since the last pass?
 - The engineering skill (`.github/skills/<project-slug>-engineering/SKILL.md`): is it still loading (appears under `/` in chat; used by the cloud agent)? Are reports still tagging claims with the confidence classes?
 
+### 11. Context weight (v1.3.0)
+
+Measure what the install injects per session. By construction: which instruction files' `applyTo:`
+globs match the files a typical session touches, times their size; which skills auto-load; how big
+the router is. Cross-check the org's usage reports for runaway consumers (a scheduled loop, an
+over-invoked skill). Flag: any instruction file that has not changed an outcome since the last pass
+(candidate for trimming or merging), any skill that dominates, any hook that injects a whole file
+where a section would do. If misbehavior was reported this quarter (rabbit-holing, fixation),
+confirm the move-context-aside bisection was run (Pitfall 29) before anyone blames the model.
+
+### 12. Routine health (v1.3.0 — only if standing routines are installed)
+
+For each routine charter (Chapter 13): noise rate vs its budget (merged vs closed PRs since the
+last pass); tuning log growing whenever PRs get closed (a closed routine PR with no tuning entry
+means the loop is broken); attempt caps and the checked completion write still in place; budget vs
+actual spend; any routine whose reporting went silent — silence must mean broken, not idle, so
+verify which it was. Propose retiring any routine still over its noise budget after two tuning
+passes.
+
 ## Output format
 
 Produce a structured report:
@@ -153,6 +172,12 @@ Produce a structured report:
 
 ## Project-truth freshness
 [PROJECT.md §3 diffs, violated §D corrections, stale backlog items, glossary drift]
+
+## Context weight
+[injection breakdown + instruction files/skills flagged]
+
+## Routine health
+[per-routine: noise vs budget, tuning-log state, caps verified — or "no routines installed"]
 
 ## Proposed PR
 - Files to update (paths)
