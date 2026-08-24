@@ -194,6 +194,29 @@ consumers, spec path, versioning rule) and the delegation defaults. The `.code-w
 (`templates/workspace/workspace.code-workspace.template`) lists the same paths as folders, with
 the workspace root first, and sets `chat.subagents.allowInvocationsFromSubagents` for Mechanism B.
 
+## Scheduled workspace routines — the contract guardian gets a clock
+
+The layout above already names the one workspace job worth scheduling ("a scheduled
+`contract-guardian` run that opens an issue on drift"). This section specifies it — and its two
+siblings — as standing routines (Chapter 13), because agent-era defects concentrate at the seams
+between repos: a contract changed in the producer and never propagated is invisible to every
+per-repo session until something breaks.
+
+- **contract-drift-daily** — re-derive each contract's consumer list from the child clones and diff
+  reality against `CONTRACTS.md` + `SERVICE_MAP.md`; open a workspace PR (or per-repo issues) on
+  divergence. This is `contract-guardian` run on a schedule instead of on demand — same charter,
+  same REVIEW-ONLY posture, plus the routine output contract.
+- **service-map-freshener** — re-verify `SERVICE_MAP.md` rows (routes, owners, deploy targets)
+  against the clones; a stale row gets a dated PR, not silent tolerance (Chapter 11's freshness
+  contract, applied cross-repo).
+- **workspace janitor** — prune stale clones and re-sync from the manifest (`sync-repos.sh`), so
+  delegation never runs against a repo state nobody chose.
+
+Routine writes follow the same delegation rule as everything else in this chapter: a routine that
+must *change* a child repo delegates to that child's own orchestrator session so the child's
+enforcement fires; the workspace-level routine itself stays read-only plus reports. Conventions,
+budgets and the catalog: `docs/13-STANDING-ROUTINES.md`.
+
 ## What NOT to do
 
 - **Don't put the specialists in the workspace repo.** They belong with the code they edit, or at
@@ -237,3 +260,4 @@ the workspace root first, and sets `chat.subagents.allowInvocationsFromSubagents
 - Official (verified 2026-08-22): *Custom agents configuration*, *VS Code → Custom agents*,
   *VS Code → Subagents*, *Agent customization overview* (per-folder discovery), *About Copilot
   coding agent* (single-repo), *Copilot CLI programmatic reference*, *Hooks reference*.
+- `docs/13-STANDING-ROUTINES.md` — the routine conventions the scheduled layer above relies on.

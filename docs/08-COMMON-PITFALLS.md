@@ -1,8 +1,8 @@
 # 08 — Common Pitfalls
 
-Twenty-eight hard-won lessons. GitHub Copilot has its own customization quirks layered on top of generic multi-agent pitfalls. Read this before bootstrapping.
+Thirty hard-won lessons. GitHub Copilot has its own customization quirks layered on top of generic multi-agent pitfalls. Read this before bootstrapping.
 
-> Pitfalls 1–19 date from v1.0/v1.1. Pitfalls 20–28 were added in v1.2.0 after three further months of production use; Pitfalls 2, 7, 9 and 19 were rewritten in v1.2.0 because the platform facts they rested on changed (verified against the official Copilot and VS Code docs on 2026-08-22), and Pitfall 20 records which v1.0/v1.1 claims the platform has since made false.
+> Pitfalls 1–19 date from v1.0/v1.1. Pitfalls 20–28 were added in v1.2.0 after three further months of production use; Pitfalls 2, 7, 9 and 19 were rewritten in v1.2.0 because the platform facts they rested on changed (verified against the official Copilot and VS Code docs on 2026-08-22), and Pitfall 20 records which v1.0/v1.1 claims the platform has since made false. Pitfalls 29–30 were added in v1.3.0 alongside Chapter 13 (standing routines).
 
 ## Pitfall 1: Putting the orchestrator's persona in `.github/copilot-instructions.md`
 
@@ -365,3 +365,34 @@ Vocabulary drift is not cosmetic. It is how a correct-looking lookup returns the
 each concept exactly once, with the DB column, the type field and the UI label that carry it. Adding
 a fifth name for an existing concept is a defect. Rename only while already editing the file that
 carries the wrong name, and say so in the commit.
+
+## Pitfall 29: A context system is a program — profile it and bisect it
+
+The router, instruction files, skills and hooks you build with this framework are injected into
+sessions as context, and that cost compounds invisibly: a mature install can front-load thousands
+of lines into every session and nobody notices until the premium-request bill or the drift does.
+Worse, misbehavior gets misattributed — when the agent rabbit-holes or fixates, teams blame the
+model while a stale instruction file or an over-broad skill is doing the steering.
+
+**Right answer:** treat context like code, with two operational habits. **Bisect:** reproduce the
+misbehavior on a scratch branch with `.github/copilot-instructions.md`, `.github/instructions/` and
+the skills temporarily moved aside; if it disappears, the fault is in your context files — find it
+by restoring halves. **Weigh:** once a quarter, measure what the install injects — which
+instruction files' `applyTo:` globs matched a typical session, times their size, plus the skills
+that auto-loaded — and read the org's usage reports for runaway consumers. Make every instruction
+file earn its context — REFINEMENT check 11 makes this a standing pass. A rule that has never
+changed an outcome is not free; it is paid for on every session.
+
+## Pitfall 30: An unattended job without a verified retire path runs forever
+
+A scheduled pipeline ran for 17 days without a single job completing. The completion write violated
+a database CHECK constraint, its error return was never read, the job stayed "running", and a reaper
+re-queued it — so the system burned its full capacity re-doing satisfied work, while every dashboard
+showed green because runs *were happening*. Nothing a person watched distinguished "ran" from
+"worked".
+
+**Right answer:** for any unattended loop (a scheduled workflow, a queue drainer, a standing routine
+— Chapter 13): the completion write's error is READ, and a failed completion is a loud failure, not
+a silent retry; attempt caps park a grinding job instead of letting it spin; and the reporting
+surface states what was *verified done*, never just that the workflow exited green. "The routine
+ran" is a claim about the scheduler; only the checked completion write is a claim about the work.

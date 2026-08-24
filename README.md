@@ -1,6 +1,8 @@
 # GitHub Copilot Orchestration Framework
 
-> **Version 1.2.1** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
+> **Version 1.3.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
+>
+> **v1.3.0 (2026-08-24) — the third leg: scheduled autonomy.** New chapter **13 — Standing Routines**: narrow agent jobs on a schedule (a `schedule:` workflow assigning an issue to the cloud agent, or headless `copilot -p`) that open small PRs behind review gates — one charter per routine, repro + truth table on every fix, noise budgets, wrong output tunes the *routine*, attempt caps + a verified retire path. Ships `templates/routine.md.template` and a cross-surface hill-climb skill. Chapter 12's scheduled `contract-guardian` job is now fully specified. Two new pitfalls (a context system is a program; unattended jobs need a verified retire path) plus REFINEMENT checks 11–12.
 >
 > **v1.2.0 (2026-08-22) — three months of production use, folded back in, and three platform claims retracted.** New chapters: **11 — Project truth, learnings and the evidence ladder** and **12 — Multi-repo workspaces** (web + mobile + microservices across repos, with the `.code-workspace` + manifest + delegation pattern). Nine new pitfalls. **Retracted, because the platform moved:** Copilot *does* have lifecycle hooks now (`.github/hooks/*.json` — chapter 10 is rewritten around them, with five working templates); custom agents *can* invoke custom agents (VS Code `agents:` is an allowlist); and **agent skills** (`.github/skills/`) — not prompt files — are the cross-surface equivalent of Claude Code skills. Every platform claim in v1.2.0 carries a verified-on date.
 >
@@ -67,11 +69,12 @@ github-copilot-orchestration-framework/
 │   ├── 05-INSTRUCTIONS-AND-PROMPTS.md    ← path-globbed instructions + prompt files
 │   ├── 06-INVOCATION-MODES.md            ← Chat vs Edit vs Cloud Agent vs CLI
 │   ├── 07-FOLDER-STRUCTURE.md            ← three-tier doc organization
-│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (28 as of v1.2)
+│   ├── 08-COMMON-PITFALLS.md             ← Copilot-specific + framework lessons (30 as of v1.3)
 │   ├── 09-RUNBOOK.md                     ← step-by-step bootstrap (~2-4 hours)
 │   ├── 10-MECHANICAL-ENFORCEMENT.md      ← (rewritten v1.2) Copilot hooks: the contract, five patterns, twelve design rules
 │   ├── 11-PROJECT-TRUTH-AND-LEARNINGS.md ← (v1.2) PROJECT.md / LEARNINGS.md / backlogs, the evidence ladder, the six-gate playbook
-│   └── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
+│   ├── 12-MULTI-REPO-WORKSPACES.md       ← (v1.2) web + mobile + microservices across repos: layers, three delegation mechanisms, contracts
+│   └── 13-STANDING-ROUTINES.md           ← (v1.3) scheduled autonomy: routine fleets, output contracts, budgets, review gates
 │
 ├── prompts/                              ← ready-to-paste Chat prompts for bootstrapping
 │   ├── INVENTORY-PROMPT.md
@@ -95,7 +98,8 @@ github-copilot-orchestration-framework/
     ├── PROJECT.md.template · LEARNINGS.md.template · BACKLOG.md.template · GLOSSARY.md.template   ← (v1.2) the project-truth set
     ├── engineering-playbook-skill.md.template ← (v1.2) six gates + evidence ladder, as .github/skills/<slug>-engineering/SKILL.md
     ├── skill.md.template                      ← (v1.2) generic agent-skill shape for .github/skills/<name>/SKILL.md
-    ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build
+    ├── skills/                                ← (v1.2) cross-surface skills: commit-push-pr, correction-capture, verify-build; (v1.3) hill-climb
+    ├── routine.md.template                    ← (v1.3) standing-routine charter (Chapter 13)
     ├── hooks/                                 ← (v1.2) hooks.json + hook-io / correction-detect / doc-freshness-track / lint-fix / stop-gate
     └── workspace/                             ← (v1.2) the multi-repo layer: .code-workspace, manifest, router, orchestrator + 2 specialists, contract instructions, delegate skill + scripts
         ├── bootstrap.sh.template                 ← (v1.2) creates the whole layer from a filled workspace.json
@@ -205,7 +209,7 @@ Estimated time: **2-4 hours** (split across phases — see `docs/09-RUNBOOK.md`)
 
 ### Scenario C — Just want to read the framework
 
-Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — self-contained **as of v1.1.2**; it predates the v1.2 hooks rewrite and chapters 11–12 (regenerate is tracked in the changelog). Or browse the markdown files in `docs/` for clickable cross-links.
+Read the **PDF** (`GitHub-Copilot-Orchestration-Framework.pdf`) — the **v1.3.0 render** (60 pages: quickstart + all 14 chapters, hooks rewrite included). Or browse the markdown files in `docs/` for clickable cross-links.
 
 The most actionable single chapter is **`docs/00-QUICKSTART.md`** — every step with *what / why / paste this / you know it worked when*, through the multi-repo workspace. `docs/09-RUNBOOK.md` is its long form.
 
