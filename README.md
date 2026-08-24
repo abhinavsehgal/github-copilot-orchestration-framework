@@ -1,6 +1,8 @@
 # GitHub Copilot Orchestration Framework
 
-> **Version 1.2.1** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
+> **Version 1.3.0** ([changelog](CHANGELOG.md)) · MIT license · `templates/` + `docs/` are tech-stack and domain agnostic
+>
+> **v1.3.0 (2026-08-24) — the third leg: scheduled autonomy.** New chapter **13 — Standing Routines**: narrow agent jobs on a schedule (a `schedule:` workflow assigning an issue to the cloud agent, or headless `copilot -p`) that open small PRs behind review gates — one charter per routine, repro + truth table on every fix, noise budgets, wrong output tunes the *routine*, attempt caps + a verified retire path. Ships `templates/routine.md.template` and a cross-surface hill-climb skill. Chapter 12's scheduled `contract-guardian` job is now fully specified. Two new pitfalls (a context system is a program; unattended jobs need a verified retire path) plus REFINEMENT checks 11–12.
 >
 > **v1.2.0 (2026-08-22) — three months of production use, folded back in, and three platform claims retracted.** New chapters: **11 — Project truth, learnings and the evidence ladder** and **12 — Multi-repo workspaces** (web + mobile + microservices across repos, with the `.code-workspace` + manifest + delegation pattern). Nine new pitfalls. **Retracted, because the platform moved:** Copilot *does* have lifecycle hooks now (`.github/hooks/*.json` — chapter 10 is rewritten around them, with five working templates); custom agents *can* invoke custom agents (VS Code `agents:` is an allowlist); and **agent skills** (`.github/skills/`) — not prompt files — are the cross-surface equivalent of Claude Code skills. Every platform claim in v1.2.0 carries a verified-on date.
 >
