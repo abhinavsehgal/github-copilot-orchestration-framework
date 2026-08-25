@@ -34,6 +34,31 @@ excludeAgent: "code-review"
 
 # <Domain Name> Instructions
 
+## Verify your globs — they fail silently, in both directions
+
+A scoped rule is two claims: the FIELD name the tool reads, and the GLOBS inside it. Both fail
+without a warning, and the two tools fail opposite ways.
+
+**The field.** Copilot reads `applyTo:`. An instruction file with no `applyTo` is **not applied automatically at all** — the opposite of Claude Code, where an unscoped rule loads every session. Same mistake, opposite damage: on Claude you drown in context, on Copilot the guidance simply never arrives, and the output looks like a model ignoring your standards.
+
+**The globs.** Glob syntax has already claimed `[` (character class) and `(` (group). A directory
+literally named `[id]` written as `[id]` matches a single character, `i` or `d`. One named
+`(admin)` written as `(admin)` matches nothing at all. Several mainstream web frameworks use
+exactly those characters as their routing convention, so a project on one will write dead globs
+naturally. Escape them:
+
+```
+applyTo: "src/app/\\(marketing\\)/**/*.tsx,src/app/api/users/\\[id\\]/route.ts"
+```
+
+**Neither failure is visible in review** — both look like ordinary paths. Copy
+`templates/verify-rule-globs.mjs.template` into your scripts directory and run it whenever a glob
+changes: it asserts every scoped file matches at least one real tracked file, and fails when two
+matchers disagree about the same pattern. On a real migration it caught 5 bracket breaks and 13
+parenthesis breaks across 7 files, one of which the author had not predicted.
+
+**A glob that matches nothing is indistinguishable from a rule you never wrote.**
+
 ## Hard rules
 
 ### <Rule title — short imperative>
